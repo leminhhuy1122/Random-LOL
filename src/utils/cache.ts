@@ -1,0 +1,1 @@
+export const DATA_DRAGON_REVALIDATE_SECONDS = 60 * 60 * 12;
