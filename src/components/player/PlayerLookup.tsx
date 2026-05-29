@@ -67,7 +67,7 @@ export function PlayerLookup({ defaultRegion }: PlayerLookupProps) {
           <input
             value={riotId}
             onChange={(event) => setRiotId(event.target.value)}
-            placeholder="GameName#TagLine"
+            placeholder={t("player.searchPlaceholder")}
             className="field big-field"
           />
           <select value={region} onChange={(event) => setRegion(event.target.value as PlatformRegion)} className="field">

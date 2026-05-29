@@ -7,13 +7,13 @@ export const runtime = "nodejs";
 
 const messages = {
   en: {
-    missingKey: "Server chưa cấu hình RIOT_API_KEY trong .env.local.",
-    invalidRegion: "Khu vực không hợp lệ.",
-    notFound: "Không tìm thấy người chơi.",
-    rateLimit: "Riot API đang giới hạn tốc độ.",
-    invalidKey: "Riot API key không hợp lệ hoặc đã hết hạn.",
-    invalidRiotId: "Riot ID phải có dạng Tên#Tagline.",
-    lookupError: "Lỗi tra cứu Riot API.",
+    missingKey: "Server has not configured RIOT_API_KEY in .env.local.",
+    invalidRegion: "Invalid region.",
+    notFound: "Player not found.",
+    rateLimit: "Riot API is rate limiting requests.",
+    invalidKey: "Riot API key is invalid or expired.",
+    invalidRiotId: "Riot ID must use the format Name#Tagline.",
+    lookupError: "Riot API lookup error.",
   },
   vi: {
     missingKey: "Server chưa cấu hình RIOT_API_KEY trong .env.local.",

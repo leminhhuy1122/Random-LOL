@@ -1,5 +1,5 @@
-export function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat("vi-VN", {
+export function formatDateTime(value: string, locale = "vi-VN") {
+  return new Intl.DateTimeFormat(locale, {
     hour: "2-digit",
     minute: "2-digit",
     day: "2-digit",

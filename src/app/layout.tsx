@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Random Rift",
-  description: "A cinematic League of Legends random champion companion.",
+  title: "Random LOL",
+  description: "A cinematic League of Legends random champion companion for Random LOL.",
 };
 
 export default function RootLayout({

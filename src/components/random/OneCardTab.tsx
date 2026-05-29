@@ -165,7 +165,7 @@ function LockedResultVault({ pick, isRolling }: { pick?: ChampionPick; isRolling
             <div className="vault-meta-pills">
               <span>
                 <Sparkles className="h-4 w-4" />
-                {pick.champion.tags[0] ?? "Champion"}
+                {pick.champion.tags[0] ?? t("one.championFallback")}
               </span>
               <span>{laneLabel}</span>
               <span>{t("one.difficulty")}: {getDifficultyLabel(pick.champion.key)}</span>

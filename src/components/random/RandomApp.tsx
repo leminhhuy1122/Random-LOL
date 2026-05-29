@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle } from "lucide-react";
-import { HistoryPanel } from "@/components/history/HistoryPanel";
 import { APP_TABS, AppShell, type AppTabId } from "@/components/layout/AppShell";
 import { PlayerLookup } from "@/components/player/PlayerLookup";
 import { OneCardTab } from "@/components/random/OneCardTab";
@@ -10,6 +9,7 @@ import { TeamRandomTab } from "@/components/random/TeamRandomTab";
 import { SettingsTab, type AppSettings } from "@/components/settings/SettingsTab";
 import { LANES } from "@/constants/lanes";
 import { I18nProvider, dataDragonLocale, useI18n } from "@/i18n/I18nProvider";
+import { DEFAULT_LANGUAGE, isLanguage, type Language } from "@/i18n/dictionaries";
 import { clearHistory, readHistory, writeHistory } from "@/services/storage.service";
 import { randomOneCard, randomTeam } from "@/services/championRandom.service";
 import type { Champion, ChampionApiResponse } from "@/types/champion";
@@ -25,7 +25,7 @@ type RollingTarget = "one" | "team" | null;
 
 const ALL_LANES = LANES.map((lane) => lane.id);
 const SETTINGS_KEY = "random-tuong-lmht-settings-v1";
-const ACTIVE_TAB_KEY = "random-rift-active-tab-v1";
+const ACTIVE_TAB_KEY = "random-lol-active-tab-v1";
 const ONE_CARD_AUDIO_SRC = "/sounds/roulette-start2.mp3";
 const ONE_CARD_AUDIO_START_SECONDS = 7;
 const ONE_CARD_AUDIO_END_SECONDS = 15;
@@ -33,7 +33,8 @@ const DEFAULT_SETTINGS: AppSettings = {
   animationLevel: "full",
   defaultRegion: "VN2",
   defaultTeamMode: 2,
-  soundEnabled: false,
+  language: DEFAULT_LANGUAGE,
+  soundEnabled: true,
   theme: "esports",
 };
 
@@ -50,7 +51,7 @@ export function RandomApp() {
 }
 
 function RandomAppContent() {
-  const { language, t } = useI18n();
+  const { language, setLanguage, t } = useI18n();
   const [activeTab, setActiveTab] = useState<AppTabId>("one");
   const [championState, setChampionState] = useState<ChampionState>({ status: "loading" });
   const [selectedLanes, setSelectedLanes] = useState<Record<LaneId, boolean>>({
@@ -95,8 +96,12 @@ function RandomAppContent() {
           ...DEFAULT_SETTINGS,
           ...(JSON.parse(rawSettings) as Partial<AppSettings>),
         };
+        if (!isLanguage(nextSettings.language)) {
+          nextSettings.language = DEFAULT_SETTINGS.language;
+        }
         setSettings(nextSettings);
         setTeamMode(nextSettings.defaultTeamMode);
+        setLanguage(nextSettings.language);
       }
     } catch {
       setSettings(DEFAULT_SETTINGS);
@@ -138,10 +143,31 @@ function RandomAppContent() {
     return () => controller.abort();
   }, [language, t]);
 
+  useEffect(() => {
+    setSettings((currentSettings) => {
+      if (currentSettings.language === language) return currentSettings;
+
+      const nextSettings = { ...currentSettings, language };
+      window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(nextSettings));
+      return nextSettings;
+    });
+  }, [language]);
+
   function updateSettings(nextSettings: AppSettings) {
     setSettings(nextSettings);
     setTeamMode(nextSettings.defaultTeamMode);
     window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(nextSettings));
+    if (nextSettings.language !== language) {
+      setLanguage(nextSettings.language);
+    }
+  }
+
+  function handleLanguageChange(nextLanguage: Language) {
+    updateSettings({ ...settings, language: nextLanguage });
+  }
+
+  function handleResetSettings() {
+    updateSettings(DEFAULT_SETTINGS);
   }
 
   function handleTabChange(tab: AppTabId) {
@@ -321,9 +347,9 @@ function RandomAppContent() {
       <AppShell
         activeTab={activeTab}
         championCount={championState.status === "ready" ? championState.champions.length : "..."}
-        dataStatus={championState.status}
+        language={settings.language}
+        onLanguageChange={handleLanguageChange}
         onTabChange={handleTabChange}
-        version={version}
       >
         {championState.status === "error" && (
           <div className="workspace-panel app-error">
@@ -366,9 +392,16 @@ function RandomAppContent() {
           />
         )}
         {activeTab === "player" && <PlayerLookup defaultRegion={settings.defaultRegion} />}
-        {activeTab === "history" && <HistoryPanel history={history} onDelete={handleDeleteHistory} onClear={handleClearHistory} />}
         {activeTab === "settings" && (
-          <SettingsTab onResetLocalData={handleResetLocalData} onSettingsChange={updateSettings} settings={settings} />
+          <SettingsTab
+            history={history}
+            onClearHistory={handleClearHistory}
+            onDeleteHistory={handleDeleteHistory}
+            onResetLocalData={handleResetLocalData}
+            onResetSettings={handleResetSettings}
+            onSettingsChange={updateSettings}
+            settings={settings}
+          />
         )}
       </AppShell>
     </div>

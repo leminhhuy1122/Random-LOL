@@ -8,16 +8,15 @@ import {
   ChevronRight,
   Clock,
   Dices,
-  History,
   Languages,
   Search,
   Settings,
   Swords,
 } from "lucide-react";
 import { useI18n } from "@/i18n/I18nProvider";
-import type { TranslationKey } from "@/i18n/dictionaries";
+import type { Language, TranslationKey } from "@/i18n/dictionaries";
 
-export type AppTabId = "one" | "team" | "player" | "history" | "settings";
+export type AppTabId = "one" | "team" | "player" | "settings";
 
 export type AppTab = {
   id: AppTabId;
@@ -26,33 +25,38 @@ export type AppTab = {
   icon: LucideIcon;
 };
 
-export const APP_TABS: AppTab[] = [
+const MAIN_TABS: AppTab[] = [
   { id: "one", labelKey: "nav.one", shortLabelKey: "nav.oneShort", icon: Dices },
   { id: "team", labelKey: "nav.team", shortLabelKey: "nav.teamShort", icon: Swords },
   { id: "player", labelKey: "nav.player", shortLabelKey: "nav.playerShort", icon: Search },
-  { id: "history", labelKey: "nav.history", shortLabelKey: "nav.historyShort", icon: History },
-  { id: "settings", labelKey: "nav.settings", shortLabelKey: "nav.settingsShort", icon: Settings },
+];
+
+const SETTINGS_TAB: AppTab = { id: "settings", labelKey: "nav.settings", shortLabelKey: "nav.settingsShort", icon: Settings };
+
+export const APP_TABS: AppTab[] = [
+  ...MAIN_TABS,
+  SETTINGS_TAB,
 ];
 
 type AppShellProps = {
   activeTab: AppTabId;
   championCount: number | "...";
   children: React.ReactNode;
-  dataStatus: "loading" | "ready" | "error";
+  language: Language;
+  onLanguageChange: (language: Language) => void;
   onTabChange: (tab: AppTabId) => void;
-  version: string;
 };
 
 export function AppShell({
   activeTab,
   championCount,
   children,
-  dataStatus,
+  language,
+  onLanguageChange,
   onTabChange,
-  version,
 }: AppShellProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const { language, setLanguage, t } = useI18n();
+  const { t } = useI18n();
   const active = APP_TABS.find((tab) => tab.id === activeTab) ?? APP_TABS[0];
   const ActiveIcon = active.icon;
   const toggleLabel = sidebarCollapsed ? t("app.expandMenu") : t("app.collapseMenu");
@@ -68,13 +72,13 @@ export function AppShell({
         <div className="brand-lockup">
           <div className="brand-mark">R</div>
           <div>
-            <strong>Random Rift</strong>
+            <strong>{t("app.brandName")}</strong>
             <span>{t("app.brandSubtitle")}</span>
           </div>
         </div>
 
         <nav className="desktop-nav" aria-label={t("app.navLabel")}>
-          {APP_TABS.map((tab) => (
+          {MAIN_TABS.map((tab) => (
             <NavButton
               key={tab.id}
               tab={tab}
@@ -85,14 +89,15 @@ export function AppShell({
           ))}
         </nav>
 
-        <LanguageSwitch />
-
-        <div className="sidebar-status">
-          <div className={`status-dot ${dataStatus}`} />
-          <div>
-            <span>Data Dragon</span>
-            <strong>{dataStatus === "ready" ? t("app.patch", { version }) : dataStatus === "loading" ? t("app.dataLoading") : t("app.dataError")}</strong>
-          </div>
+        <div className="sidebar-bottom-area">
+          <LanguageSwitcher language={language} onLanguageChange={onLanguageChange} />
+          <NavButton
+            tab={SETTINGS_TAB}
+            active={activeTab === SETTINGS_TAB.id}
+            compact={false}
+            onClick={() => onTabChange(SETTINGS_TAB.id)}
+            variant="secondary"
+          />
         </div>
       </aside>
 
@@ -129,19 +134,6 @@ export function AppShell({
     </main>
   );
 
-  function LanguageSwitch() {
-    return (
-      <div className="language-switch" aria-label={t("app.language")}>
-        <Languages className="h-4 w-4" />
-        <button className={language === "en" ? "is-active" : ""} onClick={() => setLanguage("en")} title={t("app.english")}>
-          EN
-        </button>
-        <button className={language === "vi" ? "is-active" : ""} onClick={() => setLanguage("vi")} title={t("app.vietnamese")}>
-          VI
-        </button>
-      </div>
-    );
-  }
 }
 
 function NavButton({
@@ -149,20 +141,49 @@ function NavButton({
   compact,
   onClick,
   tab,
+  variant = "primary",
 }: {
   active: boolean;
   compact: boolean;
   onClick: () => void;
   tab: AppTab;
+  variant?: "primary" | "secondary";
 }) {
   const { t } = useI18n();
   const Icon = tab.icon;
 
   return (
-    <button className={`nav-button ${active ? "is-active" : ""} ${compact ? "is-compact" : ""}`} onClick={onClick}>
+    <button className={`nav-button ${variant === "secondary" ? "is-secondary" : ""} ${active ? "is-active" : ""} ${compact ? "is-compact" : ""}`} onClick={onClick}>
       <Icon aria-hidden className="h-5 w-5" />
       <span>{compact ? t(tab.shortLabelKey) : t(tab.labelKey)}</span>
     </button>
+  );
+}
+
+function LanguageSwitcher({
+  language,
+  onLanguageChange,
+}: {
+  language: Language;
+  onLanguageChange: (language: Language) => void;
+}) {
+  const { t } = useI18n();
+
+  return (
+    <section className="sidebar-language-switcher" aria-label={t("settings.language")}>
+      <div className="language-switcher-label">
+        <Languages className="h-4 w-4" />
+        <span>{t("settings.language")}</span>
+      </div>
+      <div className="language-toggle">
+        <button className={language === "en" ? "language-option active" : "language-option"} onClick={() => onLanguageChange("en")} type="button">
+          EN
+        </button>
+        <button className={language === "vi" ? "language-option active" : "language-option"} onClick={() => onLanguageChange("vi")} type="button">
+          VI
+        </button>
+      </div>
+    </section>
   );
 }
 

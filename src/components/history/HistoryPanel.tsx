@@ -10,6 +10,7 @@ import { formatDateTime } from "@/utils/format";
 type HistoryFilter = "all" | HistoryKind;
 
 type HistoryPanelProps = {
+  embedded?: boolean;
   history: HistoryEntry[];
   onClear: () => void;
   onDelete: (id: string) => void;
@@ -22,8 +23,8 @@ const FILTERS: { id: HistoryFilter; labelKey: TranslationKey }[] = [
   { id: "two-team", labelKey: "history.twoTeam" },
 ];
 
-export function HistoryPanel({ history, onClear, onDelete }: HistoryPanelProps) {
-  const { t } = useI18n();
+export function HistoryPanel({ embedded = false, history, onClear, onDelete }: HistoryPanelProps) {
+  const { language, t } = useI18n();
   const [filter, setFilter] = useState<HistoryFilter>("all");
   const entries = useMemo(
     () => (filter === "all" ? history : history.filter((entry) => entry.kind === filter)),
@@ -31,10 +32,10 @@ export function HistoryPanel({ history, onClear, onDelete }: HistoryPanelProps) 
   );
 
   return (
-    <div className="tab-grid">
+    <div className={embedded ? "settings-history tab-grid" : "tab-grid"}>
       <section className="workspace-panel history-toolbar">
         <div>
-          <p className="screen-kicker">Timeline</p>
+          <p className="screen-kicker">{t("history.timeline")}</p>
           <h2>{t("history.title")}</h2>
         </div>
         <div className="history-actions">
@@ -74,7 +75,7 @@ export function HistoryPanel({ history, onClear, onDelete }: HistoryPanelProps) 
                   </button>
                 </div>
                 <p>{entry.summary}</p>
-                <small>{formatDateTime(entry.createdAt)}</small>
+                <small>{formatDateTime(entry.createdAt, language === "vi" ? "vi-VN" : "en-US")}</small>
               </div>
             </article>
           ))

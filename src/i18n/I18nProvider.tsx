@@ -9,7 +9,7 @@ import {
   translations,
 } from "@/i18n/dictionaries";
 
-const LANGUAGE_STORAGE_KEY = "random-rift-language-v1";
+const LANGUAGE_STORAGE_KEY = "random-lol-language-v1";
 
 type TranslationValues = Record<string, string | number>;
 

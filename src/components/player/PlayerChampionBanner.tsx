@@ -23,21 +23,21 @@ type PlayerTab = "overview" | "history";
 type ChampionModalMode = "played" | "winrate";
 type MatchFilter = "all" | "solo" | "flex" | "aram";
 
-const TAB_STORAGE_KEY = "random-rift-player-tab";
+const TAB_STORAGE_KEY = "random-lol-player-tab";
 
-const MATCH_FILTERS: Array<{ key: MatchFilter; label: string }> = [
-  { key: "all", label: "Tất cả chế độ" },
-  { key: "solo", label: "Xếp hạng đơn/đôi" },
-  { key: "flex", label: "Linh hoạt 5v5" },
-  { key: "aram", label: "ARAM" }
+const MATCH_FILTERS: Array<{ key: MatchFilter; labelKey: "player.allModes" | "player.rankedSoloDuo" | "player.rankedFlex"; fallback?: string }> = [
+  { key: "all", labelKey: "player.allModes" },
+  { key: "solo", labelKey: "player.rankedSoloDuo" },
+  { key: "flex", labelKey: "player.rankedFlex" },
+  { key: "aram", labelKey: "player.allModes", fallback: "ARAM" },
 ];
 
 const ANALYSIS_ROWS = [
-  { key: "combat", label: "Giao tranh" },
-  { key: "attack", label: "Tấn công" },
-  { key: "farm", label: "Farm" },
-  { key: "objective", label: "Mục tiêu" },
-  { key: "vision", label: "Tầm nhìn" }
+  { key: "combat", labelKey: "player.combat" },
+  { key: "attack", labelKey: "player.attack" },
+  { key: "farm", labelKey: "player.farm" },
+  { key: "objective", labelKey: "player.objective" },
+  { key: "vision", labelKey: "player.vision" },
 ] as const;
 
 export function PlayerChampionBanner({ player, loading = false, error }: PlayerChampionBannerProps) {
@@ -143,12 +143,12 @@ export function PlayerChampionBanner({ player, loading = false, error }: PlayerC
       {topChampion && <img className="player-banner-preload" src={topChampion.splashUrl} alt="" onError={() => setImageFailed(true)} />}
       <ProfileHero player={player} showChampionBackground={showChampionBackground} />
 
-      <div className="player-profile-tabs" role="tablist" aria-label="Nội dung tra cứu người chơi">
+      <div className="player-profile-tabs" role="tablist" aria-label={t("player.tabsLabel")}>
         <button className={activeTab === "overview" ? "is-active" : ""} type="button" onClick={() => handleTabChange("overview")}>
-          Tổng quan
+          {t("player.overview")}
         </button>
         <button className={activeTab === "history" ? "is-active" : ""} type="button" onClick={() => handleTabChange("history")}>
-          Lịch sử đấu
+          {t("player.matchHistory")}
         </button>
       </div>
 
@@ -170,6 +170,8 @@ export function PlayerChampionBanner({ player, loading = false, error }: PlayerC
 }
 
 function ProfileHero({ player, showChampionBackground }: { player: PlayerLookupResult; showChampionBackground: boolean }) {
+  const { t } = useI18n();
+
   return (
     <header className="player-profile-hero">
       {showChampionBackground && <div className="player-profile-hero-bg" />}
@@ -184,12 +186,12 @@ function ProfileHero({ player, showChampionBackground }: { player: PlayerLookupR
           <span>#{player.riotId.split("#")[1] ?? player.region}</span>
         </div>
         <p>
-          Cấp {player.level} · {player.region}
-          <span className="player-region-pill">Việt Nam</span>
+          {t("player.levelRegion", { level: player.level, region: player.region })}
+          <span className="player-region-pill">{player.region === "VN2" ? t("player.regionVietnam") : player.region}</span>
         </p>
         <div className="player-rank-strip">
-          <RankSummary title="Đơn/Đôi" rank={player.soloRank} />
-          <RankSummary title="Linh Hoạt 5v5" rank={player.flexRank} />
+          <RankSummary title={t("player.rankSoloDuo")} rank={player.soloRank} />
+          <RankSummary title={t("player.rankFlex")} rank={player.flexRank} />
         </div>
       </div>
     </header>
@@ -197,11 +199,13 @@ function ProfileHero({ player, showChampionBackground }: { player: PlayerLookupR
 }
 
 function RankSummary({ title, rank }: { title: string; rank?: RankInfo }) {
+  const { t } = useI18n();
+
   return (
     <div className="player-rank-summary">
       <span className="rank-queue-label">{title}</span>
-      <img className="rank-emblem" src={getRankEmblemUrl(rank?.tier)} alt={rank ? `${rank.tier} emblem` : "Unranked emblem"} loading="lazy" />
-      <strong style={{ color: getRankColor(rank?.tier) }}>{rank ? formatRankVi(rank) : "Chưa xếp hạng"}</strong>
+      <img className="rank-emblem" src={getRankEmblemUrl(rank?.tier)} alt={rank ? `${rank.tier} emblem` : `${t("player.unranked")} emblem`} loading="lazy" />
+      <strong style={{ color: getRankColor(rank?.tier) }}>{formatRank(rank, t)}</strong>
       <small>{rank ? `${rank.leaguePoints} LP` : "0 LP"}</small>
     </div>
   );
@@ -209,23 +213,25 @@ function RankSummary({ title, rank }: { title: string; rank?: RankInfo }) {
 
 function OverviewTab({
   player,
-  onOpenChampionModal
+  onOpenChampionModal,
 }: {
   player: PlayerLookupResult;
   onOpenChampionModal: (mode: ChampionModalMode) => void;
 }) {
+  const { t } = useI18n();
+
   return (
     <div className="player-overview-grid">
       <section className="player-overview-left">
         <OverviewPanel player={player} />
         <ChampionListPanel
-          title="Tướng chơi nhiều nhất"
+          title={t("player.mostPlayedChampions")}
           champions={player.mostPlayedChampions}
           mode="played"
           onViewAll={() => onOpenChampionModal("played")}
         />
         <ChampionListPanel
-          title="Tướng có tỉ lệ thắng cao nhất"
+          title={t("player.bestWinrateChampions")}
           champions={player.bestWinrateChampions}
           mode="winrate"
           onViewAll={() => onOpenChampionModal("winrate")}
@@ -241,18 +247,19 @@ function OverviewTab({
 }
 
 function OverviewPanel({ player }: { player: PlayerLookupResult }) {
+  const { t } = useI18n();
   const summary = player.performance;
 
   return (
     <section className="player-data-panel overview-panel">
-      <h3>Hiệu suất tổng quan</h3>
+      <h3>{t("player.overallPerformance")}</h3>
       <div className="overview-content">
         <WinrateRing value={summary.winrate} />
         <div className="overview-stats">
-          <MetricLine value={summary.games} label="Trận" accent={`${summary.wins}W - ${summary.losses}L`} />
+          <MetricLine value={summary.games} label={t("player.games")} accent={`${summary.wins}W - ${summary.losses}L`} />
           <MetricLine value={summary.kda} label="KDA" accent={`(${summary.kills} / ${summary.deaths} / ${summary.assists})`} />
-          <MetricLine value={summary.csPerMinute} label="CS/phút" />
-          <MetricLine value={`+${summary.damagePerMinute}`} label="DNG/phút" />
+          <MetricLine value={summary.csPerMinute} label={t("player.csPerMinute")} />
+          <MetricLine value={`+${summary.damagePerMinute}`} label={t("player.damagePerMinute")} />
         </div>
       </div>
     </section>
@@ -270,6 +277,7 @@ function MetricLine({ value, label, accent }: { value: number | string; label: s
 }
 
 function WinrateRing({ value }: { value: number }) {
+  const { t } = useI18n();
   const radius = 48;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (value / 100) * circumference;
@@ -282,7 +290,7 @@ function WinrateRing({ value }: { value: number }) {
       </svg>
       <div>
         <strong>{value}%</strong>
-        <span>Tỉ lệ thắng</span>
+        <span>{t("player.winrate")}</span>
       </div>
     </div>
   );
@@ -292,20 +300,21 @@ function ChampionListPanel({
   title,
   champions,
   mode,
-  onViewAll
+  onViewAll,
 }: {
   title: string;
   champions: PlayerChampionStat[];
   mode: ChampionModalMode;
   onViewAll: () => void;
 }) {
+  const { t } = useI18n();
   const maxGames = Math.max(...champions.map((champion) => champion.games), 1);
 
   return (
     <section className="player-data-panel champion-list-panel">
       <div className="player-panel-head compact">
         <h3>{title}</h3>
-        <button type="button" onClick={onViewAll}>Xem tất cả</button>
+        <button type="button" onClick={onViewAll}>{t("player.viewAll")}</button>
       </div>
       <div className="champion-stat-list">
         {champions.length > 0 ? (
@@ -313,7 +322,7 @@ function ChampionListPanel({
             <div className="champion-stat-row" key={`${title}-${champion.championKey}`}>
               <img src={champion.championIconUrl} alt={champion.championName} loading="lazy" />
               <strong>{champion.championName}</strong>
-              <span>{champion.games} trận</span>
+              <span>{t("player.matchesCount", { count: champion.games })}</span>
               <div className="champion-stat-bar">
                 <i style={{ width: `${mode === "played" ? (champion.games / maxGames) * 100 : champion.winrate}%` }} />
               </div>
@@ -321,7 +330,7 @@ function ChampionListPanel({
             </div>
           ))
         ) : (
-          <div className="player-empty-data">Chưa có đủ dữ liệu tướng.</div>
+          <div className="player-empty-data">{t("player.noChampionData")}</div>
         )}
       </div>
     </section>
@@ -329,37 +338,39 @@ function ChampionListPanel({
 }
 
 function RankProgressPanel({ player }: { player: PlayerLookupResult }) {
+  const { language, t } = useI18n();
   const rank = player.soloRank;
   const rankedMatches = player.matches.filter((match) => match.queueGroup === "solo").slice(0, 12);
   const recentRanked = rankedMatches.length > 0 ? rankedMatches : player.matches.slice(0, 12);
   const winrate = rank ? Math.round((rank.wins / Math.max(rank.wins + rank.losses, 1)) * 1000) / 10 : 0;
   const recentWins = recentRanked.slice(0, 5).filter((match) => match.win).length;
+  const locale = language === "vi" ? "vi-VN" : "en-US";
 
   return (
     <section className="rank-progress-card">
       <div className="rank-progress-top">
-        <h3>Xếp hạng đơn/đôi</h3>
+        <h3>{t("player.soloDuoRank")}</h3>
         <div className="rank-progress-summary">
-          <img className="rank-progress-emblem" src={getRankEmblemUrl(rank?.tier)} alt={rank ? `${rank.tier} emblem` : "Unranked emblem"} loading="lazy" />
+          <img className="rank-progress-emblem" src={getRankEmblemUrl(rank?.tier)} alt={rank ? `${rank.tier} emblem` : `${t("player.unranked")} emblem`} loading="lazy" />
           <div className="rank-progress-info">
             <div className="rank-title-line">
-              <strong style={{ color: getRankColor(rank?.tier) }}>{formatRankVi(rank)}</strong>
+              <strong style={{ color: getRankColor(rank?.tier) }}>{formatRank(rank, t)}</strong>
               <span>{rank ? `${rank.leaguePoints} LP` : "0 LP"}</span>
             </div>
             <div className="rank-progress-bar">
               <i style={{ width: `${rank ? Math.max(4, Math.min(rank.leaguePoints, 100)) : 0}%` }} />
             </div>
             <div className="rank-record-row">
-              <span>{winrate.toLocaleString("vi-VN")}% tỉ lệ thắng</span>
-              <span>{rank ? `${rank.wins} thắng - ${rank.losses} thua` : "0 thắng - 0 thua"}</span>
+              <span>{t("player.rankWinrate", { value: winrate.toLocaleString(locale) })}</span>
+              <span>{rank ? t("player.rankRecord", { wins: rank.wins, losses: rank.losses }) : t("player.rankRecord", { wins: 0, losses: 0 })}</span>
             </div>
           </div>
         </div>
       </div>
       <div className="rank-progress-chart-area">
         <div className="rank-mini-head">
-          <h3>Phong độ xếp hạng gần đây</h3>
-          <span>{recentRanked.length > 0 ? `${recentWins} thắng / ${Math.min(5, recentRanked.length)} trận gần nhất` : "Chưa có dữ liệu"}</span>
+          <h3>{t("player.recentRankedForm")}</h3>
+          <span>{recentRanked.length > 0 ? t("player.recentRecord", { wins: recentWins, games: Math.min(5, recentRanked.length) }) : t("player.noData")}</span>
         </div>
         {recentRanked.length > 0 ? (
           <div className="rank-form-strip">
@@ -367,14 +378,14 @@ function RankProgressPanel({ player }: { player: PlayerLookupResult }) {
               <span
                 key={match.id}
                 className={`rank-form-dot ${match.win ? "is-win" : "is-loss"}`}
-                title={`${match.win ? "Thắng" : "Thua"} ${match.championName}`}
+                title={`${match.win ? t("player.win") : t("player.loss")} ${match.championName}`}
               >
                 {match.win ? "W" : "L"}
               </span>
             ))}
           </div>
         ) : (
-          <div className="player-empty-data">Không có trận xếp hạng gần đây.</div>
+          <div className="player-empty-data">{t("player.noRankedData")}</div>
         )}
       </div>
     </section>
@@ -382,28 +393,29 @@ function RankProgressPanel({ player }: { player: PlayerLookupResult }) {
 }
 
 function AnalysisPanel({ player }: { player: PlayerLookupResult }) {
+  const { t } = useI18n();
   const summaryRows = [
     { label: "KDA", value: player.performance.kda, percent: Math.min(100, player.performance.kda * 18), top: "42%" },
-    { label: "CS/phút", value: player.performance.csPerMinute, percent: Math.min(100, player.performance.csPerMinute * 12), top: "58%" },
-    { label: "DNG/phút", value: player.performance.damagePerMinute, percent: Math.min(100, player.performance.damagePerMinute / 8), top: "47%" },
-    { label: "KP", value: `${player.performance.killParticipation}%`, percent: player.performance.killParticipation, top: "53%" }
+    { label: t("player.csPerMinute"), value: player.performance.csPerMinute, percent: Math.min(100, player.performance.csPerMinute * 12), top: "58%" },
+    { label: t("player.damagePerMinute"), value: player.performance.damagePerMinute, percent: Math.min(100, player.performance.damagePerMinute / 8), top: "47%" },
+    { label: "KP", value: `${player.performance.killParticipation}%`, percent: player.performance.killParticipation, top: "53%" },
   ];
 
   return (
     <section className="player-data-panel analysis-panel">
       <div className="player-panel-head">
-        <h3>Phân tích hiệu suất</h3>
-        <button type="button">So sánh với trung bình <ChevronDown className="h-4 w-4" /></button>
+        <h3>{t("player.performanceAnalysis")}</h3>
+        <button type="button">{t("player.compareAverage")} <ChevronDown className="h-4 w-4" /></button>
       </div>
       <div className="analysis-summary-card">
         <TrendingUp className="h-5 w-5" />
-        <span>{player.performance.winrate >= 50 ? "Phong độ ổn định trong 20 trận gần đây." : "Cần cải thiện nhịp thắng trong các trận gần đây."}</span>
+        <span>{player.performance.winrate >= 50 ? t("player.analysisStable") : t("player.analysisImprove")}</span>
       </div>
       <div className="analysis-performance-bars">
         {ANALYSIS_ROWS.map((row) => (
           <AnalysisMetric
             key={row.key}
-            label={row.label}
+            label={t(row.labelKey)}
             value={player.analysis[row.key]}
             percent={player.analysis[row.key]}
             top={`${Math.max(1, 100 - player.analysis[row.key])}%`}
@@ -431,6 +443,7 @@ function AnalysisMetric({ label, value, percent, top }: { label: string; value: 
 }
 
 function HistoryTab({ player }: { player: PlayerLookupResult }) {
+  const { t } = useI18n();
   const [filter, setFilter] = useState<MatchFilter>("all");
   const [visibleMatches, setVisibleMatches] = useState(8);
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
@@ -450,9 +463,9 @@ function HistoryTab({ player }: { player: PlayerLookupResult }) {
     <div className="player-history-grid">
       <section className="player-match-panel is-history">
         <div className="player-panel-head">
-          <h3>Lịch sử đấu</h3>
+          <h3>{t("player.matchHistory")}</h3>
         </div>
-        <div className="match-filter-row" aria-label="Lọc lịch sử đấu">
+        <div className="match-filter-row" aria-label={t("player.matchFilterLabel")}>
           {MATCH_FILTERS.map((item) => (
             <button
               key={item.key}
@@ -460,7 +473,7 @@ function HistoryTab({ player }: { player: PlayerLookupResult }) {
               type="button"
               onClick={() => setFilter(item.key)}
             >
-              {item.label}
+              {item.fallback ?? t(item.labelKey)}
             </button>
           ))}
         </div>
@@ -476,12 +489,12 @@ function HistoryTab({ player }: { player: PlayerLookupResult }) {
               />
             ))
           ) : (
-            <div className="player-empty-data">Không có trận phù hợp với bộ lọc.</div>
+            <div className="player-empty-data">{t("player.noMatchesFilter")}</div>
           )}
         </div>
         {filteredMatches.length > shownMatches.length && (
           <button className="load-more-matches" type="button" onClick={() => setVisibleMatches((value) => value + 6)}>
-            Tải thêm trận đấu
+            {t("player.loadMoreMatches")}
           </button>
         )}
       </section>
@@ -502,13 +515,15 @@ function MatchRow({
   match,
   active = false,
   onClick,
-  onHover
+  onHover,
 }: {
   match: PlayerMatchItem;
   active?: boolean;
   onClick?: () => void;
   onHover?: (id: string | null) => void;
 }) {
+  const { t } = useI18n();
+
   return (
     <article
       className={`match-row ${match.win ? "is-win" : "is-loss"} ${active ? "is-active" : ""}`}
@@ -529,7 +544,7 @@ function MatchRow({
         <strong>{match.level}</strong>
       </div>
       <div className="match-result">
-        <b>{match.win ? "Thắng" : "Thua"}</b>
+        <b>{match.win ? t("player.win") : t("player.loss")}</b>
         <span>{match.championName}</span>
       </div>
       <div className="match-kda">
@@ -545,8 +560,8 @@ function MatchRow({
         </div>
       </div>
       <div className="match-meta">
-        <span>{match.queueName}</span>
-        <small>{timeAgo(match.gameEndedAt)}</small>
+        <span>{getQueueLabel(match, t)}</span>
+        <small>{timeAgo(match.gameEndedAt, t)}</small>
         <small>{formatDuration(match.durationSeconds)}</small>
       </div>
     </article>
@@ -556,12 +571,13 @@ function MatchRow({
 function RecentPerformancePanel({
   matches,
   highlightedMatchId,
-  onHover
+  onHover,
 }: {
   matches: PlayerMatchItem[];
   highlightedMatchId: string | null;
   onHover: (id: string | null) => void;
 }) {
+  const { t } = useI18n();
   const wins = matches.filter((match) => match.win).length;
   const losses = matches.length - wins;
   const winrate = matches.length > 0 ? Math.round((wins / matches.length) * 100) : 0;
@@ -571,21 +587,21 @@ function RecentPerformancePanel({
   return (
     <section className="player-data-panel recent-performance-panel">
       <div className="player-panel-head">
-        <h3>Phong độ 20 trận gần đây</h3>
-        <span>{matches.length} trận</span>
+        <h3>{t("player.recent20")}</h3>
+        <span>{t("player.matchesCount", { count: matches.length })}</span>
       </div>
       {matches.length > 0 ? (
         <>
           <PerformanceLineChart matches={matches} highlightedMatchId={highlightedMatchId} onHover={onHover} />
           <div className="performance-cards">
-            <KpiCard value={`${winrate}%`} label="Tỉ lệ thắng" tone="green" />
-            <KpiCard value={`${wins}W - ${losses}L`} label="Kết quả" tone="mixed" />
+            <KpiCard value={`${winrate}%`} label={t("player.winrate")} tone="green" />
+            <KpiCard value={`${wins}W - ${losses}L`} label={t("player.result")} tone="mixed" />
             <KpiCard value={mvp} label="MVP" />
             <KpiCard value={ace} label="ACE" />
           </div>
         </>
       ) : (
-        <div className="player-empty-data">Chưa có dữ liệu phong độ.</div>
+        <div className="player-empty-data">{t("player.noPerformanceData")}</div>
       )}
     </section>
   );
@@ -594,12 +610,13 @@ function RecentPerformancePanel({
 function PerformanceLineChart({
   matches,
   highlightedMatchId,
-  onHover
+  onHover,
 }: {
   matches: PlayerMatchItem[];
   highlightedMatchId: string | null;
   onHover: (id: string | null) => void;
 }) {
+  const { t } = useI18n();
   const width = 620;
   const height = 220;
   const paddingX = 28;
@@ -613,7 +630,7 @@ function PerformanceLineChart({
   const path = points.map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`).join(" ");
 
   return (
-    <svg className="performance-line-chart" viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Biểu đồ phong độ gần đây">
+    <svg className="performance-line-chart" viewBox={`0 0 ${width} ${height}`} role="img" aria-label={t("player.chartLabel")}>
       <line className="rank-lp-midline" x1="22" x2={width - 22} y1={height / 2} y2={height / 2} />
       <path className="rank-lp-path-shadow" d={path} />
       <path className="rank-lp-path" d={path} />
@@ -647,11 +664,13 @@ function KpiCard({ value, label, tone }: { value: number | string; label: string
 }
 
 function MatchDetailPanel({ match }: { match?: PlayerMatchItem }) {
+  const { t } = useI18n();
+
   if (!match) {
     return (
       <section className="player-data-panel match-detail-card">
-        <h3>Chi tiết trận đấu</h3>
-        <div className="player-empty-data">Chọn một trận để xem chi tiết.</div>
+        <h3>{t("player.matchDetail")}</h3>
+        <div className="player-empty-data">{t("player.matchDetailEmpty")}</div>
       </section>
     );
   }
@@ -661,14 +680,14 @@ function MatchDetailPanel({ match }: { match?: PlayerMatchItem }) {
       <div className="match-detail-head">
         <img src={match.championIconUrl} alt={match.championName} loading="lazy" />
         <div>
-          <h3>{match.win ? "Chiến thắng" : "Thất bại"} với {match.championName}</h3>
-          <span>{match.queueName} · {timeAgo(match.gameEndedAt)} · {formatDuration(match.durationSeconds)}</span>
+          <h3>{t(match.win ? "player.victoryWith" : "player.defeatWith", { champion: match.championName })}</h3>
+          <span>{getQueueLabel(match, t)} · {timeAgo(match.gameEndedAt, t)} · {formatDuration(match.durationSeconds)}</span>
         </div>
       </div>
       <div className="detail-stat-grid">
         <KpiCard value={`${match.kills}/${match.deaths}/${match.assists}`} label="K/D/A" />
         <KpiCard value={match.kda.toFixed(2)} label="KDA" />
-        <KpiCard value={match.csPerMinute} label="CS/phút" />
+        <KpiCard value={match.csPerMinute} label={t("player.csPerMinute")} />
         <KpiCard value={`${match.killParticipation}%`} label="KP" />
       </div>
       <div className="match-detail-items">
@@ -681,15 +700,17 @@ function MatchDetailPanel({ match }: { match?: PlayerMatchItem }) {
 function ChampionStatsModal({
   mode,
   champions,
-  onClose
+  onClose,
 }: {
   mode: ChampionModalMode;
   champions: PlayerChampionStat[];
   onClose: () => void;
 }) {
+  const { t } = useI18n();
   const sortedChampions = [...champions].sort((a, b) =>
     mode === "played" ? b.games - a.games || b.winrate - a.winrate : b.winrate - a.winrate || b.games - a.games
   );
+  const title = mode === "played" ? t("player.modalPlayedLabel") : t("player.modalWinrateLabel");
 
   return (
     <div className="champion-modal-backdrop" onClick={onClose}>
@@ -697,15 +718,15 @@ function ChampionStatsModal({
         className="champion-modal"
         role="dialog"
         aria-modal="true"
-        aria-label={mode === "played" ? "Tướng chơi nhiều nhất" : "Tướng có tỉ lệ thắng cao nhất"}
+        aria-label={title}
         onClick={(event) => event.stopPropagation()}
       >
         <div className="champion-modal-head">
           <div>
-            <span>{mode === "played" ? "Thống kê theo số trận" : "Tối thiểu 3 trận để xếp hạng"}</span>
-            <h3>{mode === "played" ? "Tướng chơi nhiều nhất" : "Tướng có tỉ lệ thắng cao nhất"}</h3>
+            <span>{mode === "played" ? t("player.modalPlayedKicker") : t("player.modalWinrateKicker")}</span>
+            <h3>{title}</h3>
           </div>
-          <button type="button" onClick={onClose} aria-label="Đóng">
+          <button type="button" onClick={onClose} aria-label={t("common.close")}>
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -716,14 +737,14 @@ function ChampionStatsModal({
                 <span>{index + 1}</span>
                 <img src={champion.championIconUrl} alt={champion.championName} loading="lazy" />
                 <strong>{champion.championName}</strong>
-                <em>{champion.games} trận</em>
-                <em>{champion.winrate}% thắng</em>
+                <em>{t("player.matchesCount", { count: champion.games })}</em>
+                <em>{t("player.winPercent", { value: champion.winrate })}</em>
                 <em>{champion.wins}W</em>
                 <em>{champion.kda.toFixed(2)} KDA</em>
               </div>
             ))
           ) : (
-            <div className="player-empty-data">Chưa có đủ dữ liệu để hiển thị.</div>
+            <div className="player-empty-data">{t("player.noModalData")}</div>
           )}
         </div>
       </div>
@@ -734,6 +755,13 @@ function ChampionStatsModal({
 function filterMatches(matches: PlayerMatchItem[], filter: MatchFilter) {
   if (filter === "all") return matches;
   return matches.filter((match) => match.queueGroup === filter);
+}
+
+function getQueueLabel(match: PlayerMatchItem, t: ReturnType<typeof useI18n>["t"]) {
+  if (match.queueGroup === "solo") return t("player.rankedSoloDuo");
+  if (match.queueGroup === "flex") return t("player.rankedFlex");
+  if (match.queueGroup === "normal") return t("player.normalQueue");
+  return match.queueName;
 }
 
 function getRankEmblemUrl(tier?: string) {
@@ -752,32 +780,20 @@ function getRankColor(tier?: string) {
     DIAMOND: "#8b5cf6",
     MASTER: "#d946ef",
     GRANDMASTER: "#ef4444",
-    CHALLENGER: "#facc15"
+    CHALLENGER: "#facc15",
   };
   return tier ? colors[tier] ?? "#cbd5e1" : "#9ca3af";
 }
 
-function formatRankVi(rank?: RankInfo) {
-  if (!rank) return "Chưa xếp hạng";
-  const tierNames: Record<string, string> = {
-    IRON: "Sắt",
-    BRONZE: "Đồng",
-    SILVER: "Bạc",
-    GOLD: "Vàng",
-    PLATINUM: "Bạch kim",
-    EMERALD: "Lục bảo",
-    DIAMOND: "Kim cương",
-    MASTER: "Cao thủ",
-    GRANDMASTER: "Đại cao thủ",
-    CHALLENGER: "Thách đấu"
-  };
-  return `${tierNames[rank.tier] ?? rank.tier} ${rank.rank ?? ""}`.trim();
+function formatRank(rank: RankInfo | undefined, t: ReturnType<typeof useI18n>["t"]) {
+  if (!rank) return t("player.unranked");
+  return `${t(`rank.${rank.tier}` as Parameters<typeof t>[0])} ${rank.rank ?? ""}`.trim();
 }
 
-function timeAgo(timestamp: number) {
+function timeAgo(timestamp: number, t: ReturnType<typeof useI18n>["t"]) {
   const diffHours = Math.max(1, Math.round((Date.now() - timestamp) / 3600000));
-  if (diffHours < 24) return `Cách đây ${diffHours} giờ`;
-  return diffHours < 48 ? "Hôm qua" : `${Math.round(diffHours / 24)} ngày trước`;
+  if (diffHours < 24) return t("player.hoursAgo", { hours: diffHours });
+  return diffHours < 48 ? t("player.yesterday") : t("player.daysAgo", { days: Math.round(diffHours / 24) });
 }
 
 function formatDuration(seconds: number) {
