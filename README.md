@@ -1,33 +1,104 @@
+<div align="center">
+
 # Random LOL
 
-Random LOL is a cinematic League of Legends randomizer and companion web app.
+### A cinematic League of Legends randomizer built with **vibe code**
 
-Live demo: https://random-lol-ochre.vercel.app/
+Random champions, build playful 5v5 teams, and look up Riot player profiles in a Hextech-inspired web experience.
 
-Built with a **vibe coding** workflow: fast, visual, iterative development where product idea, UI mood, and code evolve together until the app feels right.
+<br />
 
-## What It Does
+## [Open Live Demo](https://random-lol-ochre.vercel.app/)
 
-Random LOL helps League of Legends players quickly create fun picks and lineups:
+<br />
 
-- Random 1 champion with a cinematic roulette reveal.
-- Generate random 5v5 teams.
-- Look up a player by Riot ID.
-- View rank, recent match history, champion stats, and performance insights.
-- Switch instantly between Vietnamese and English.
-- Customize theme, effects, sound, region, and default team mode.
+![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=nextdotjs)
+![React](https://img.shields.io/badge/React-19-149eca?style=for-the-badge&logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?style=for-the-badge&logo=typescript&logoColor=white)
+![Vercel](https://img.shields.io/badge/Deploy-Vercel-black?style=for-the-badge&logo=vercel)
 
-## Demo
+</div>
 
-Try it here:
+---
 
-https://random-lol-ochre.vercel.app/
+## Live Website
 
-## Vibe Coding Note
+The project is deployed here:
 
-This project was shaped through vibe coding: building by feel, flow, and fast feedback.
+### [https://random-lol-ochre.vercel.app/](https://random-lol-ochre.vercel.app/)
 
-The goal was not only to make a utility, but to make a small web experience that feels like a game client: dark, cinematic, Hextech-inspired, and fun to click.
+Click the link above to try the app directly in your browser.
+
+---
+
+## About Random LOL
+
+Random LOL is a fan-made League of Legends companion web app focused on fun randomization and a strong game-client feeling.
+
+It is designed for quick moments like:
+
+- "Give me one random champion to play."
+- "Generate a 5v5 team lineup."
+- "Look up this Riot ID and show useful stats."
+- "Make the random experience feel cinematic, not plain."
+
+The UI takes inspiration from Riot Client / Hextech vibes: dark panels, glowing accents, champion splash art, roulette motion, and polished control panels.
+
+---
+
+## Built With Vibe Code
+
+This project was made through **vibe code**.
+
+That means the web app was built by following the feeling of the product as much as the feature list: fast iterations, visual feedback, playful UI decisions, and code shaped around the intended mood.
+
+The goal was not just to make a tool.  
+The goal was to make a randomizer that feels fun to open, click, and show to friends.
+
+---
+
+## Features
+
+### Champion Roulette
+
+Random 1 champion with a cinematic roulette reveal, champion art, lane role, spells, items, and animated result states.
+
+### Random Team 5v5
+
+Generate 1-team or 2-team League-style lineups with lane filtering and side-based layouts.
+
+### Player Lookup
+
+Search by Riot ID and view:
+
+- Profile information
+- Solo/Duo and Flex rank
+- Recent match history
+- Champion stats
+- Win rate and performance panels
+
+### Bilingual UI
+
+Instant language switching:
+
+- Vietnamese
+- English
+
+The selected language is saved locally.
+
+### Settings Panel
+
+Customize:
+
+- Language
+- Theme
+- Effects level
+- Sound preference
+- Default region
+- Default team mode
+- Local history data
+
+---
 
 ## Tech Stack
 
@@ -41,62 +112,25 @@ The goal was not only to make a utility, but to make a small web experience that
 - Riot API
 - Vercel
 
-## Features
-
-### Random Champion Roulette
-
-A cinematic single champion randomizer with roulette motion, reveal states, champion art, role info, summoner spells, and suggested items.
-
-### Random Team 5v5
-
-Generate one or two League-style team lineups with lane filtering and side-based team layouts.
-
-### Player Lookup
-
-Search by Riot ID to inspect:
-
-- Profile information
-- Solo/Duo and Flex rank
-- Recent match history
-- Champion usage
-- Win rate and performance panels
-
-### Language Support
-
-The app supports:
-
-- Vietnamese
-- English
-
-Language changes apply instantly without reloading and are saved locally.
-
-### Settings
-
-Settings include:
-
-- Language
-- Theme
-- Effects level
-- Sound preference
-- Default region
-- Default team mode
-- Local history clearing
+---
 
 ## Environment Variables
 
-For local development, create `.env.local`:
+Create `.env.local` for local development:
 
 ```env
 RIOT_API_KEY=your_riot_api_key_here
 ```
 
-For Vercel, add the same variable in:
+On Vercel, add the same variable in:
 
 ```text
 Project Settings -> Environment Variables
 ```
 
-`RIOT_API_KEY` is required for player lookup. Champion data and randomizer features use Riot Data Dragon.
+`RIOT_API_KEY` is required for player lookup. Champion data and random champion features use Riot Data Dragon.
+
+---
 
 ## Run Locally
 
@@ -111,19 +145,23 @@ Open:
 http://localhost:3000
 ```
 
-## Check Build
+---
+
+## Build Check
 
 ```bash
 npm run lint
 npm run build
 ```
 
+---
+
 ## Deploy To Vercel
 
 1. Push the project to GitHub.
 2. Import the repository in Vercel.
-3. Use the default Next.js settings.
-4. Add `RIOT_API_KEY` to Environment Variables.
+3. Keep the default Next.js settings.
+4. Add `RIOT_API_KEY` in Environment Variables.
 5. Deploy.
 
 The project includes `vercel.json`:
@@ -136,6 +174,8 @@ The project includes `vercel.json`:
   "devCommand": "npm run dev"
 }
 ```
+
+---
 
 ## Disclaimer
 
