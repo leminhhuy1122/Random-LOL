@@ -1,18 +1,33 @@
 # Random LOL
 
-Random LOL is a cinematic League of Legends companion web app for quickly randomizing champions, generating 5v5 teams, and looking up player profiles through Riot APIs.
+Random LOL is a cinematic League of Legends randomizer and companion web app.
 
-This web app was created through **vibe coding**: fast, idea-driven building where design direction, product feel, and implementation evolve together in the same flow.
+Live demo: https://random-lol-ochre.vercel.app/
 
-## Highlights
+Built with a **vibe coding** workflow: fast, visual, iterative development where product idea, UI mood, and code evolve together until the app feels right.
 
-- Random 1 champion with a roulette-style cinematic reveal.
-- Generate 1-team or 2-team 5v5 lineups.
-- Player lookup by Riot ID with rank, match history, champion stats, and performance panels.
-- Vietnamese and English UI with instant language switching.
-- Hextech / Riot Client inspired interface.
-- Local settings for language, theme, effects, sound, region, and default team mode.
-- Ready for deployment on Vercel.
+## What It Does
+
+Random LOL helps League of Legends players quickly create fun picks and lineups:
+
+- Random 1 champion with a cinematic roulette reveal.
+- Generate random 5v5 teams.
+- Look up a player by Riot ID.
+- View rank, recent match history, champion stats, and performance insights.
+- Switch instantly between Vietnamese and English.
+- Customize theme, effects, sound, region, and default team mode.
+
+## Demo
+
+Try it here:
+
+https://random-lol-ochre.vercel.app/
+
+## Vibe Coding Note
+
+This project was shaped through vibe coding: building by feel, flow, and fast feedback.
+
+The goal was not only to make a utility, but to make a small web experience that feels like a game client: dark, cinematic, Hextech-inspired, and fun to click.
 
 ## Tech Stack
 
@@ -22,23 +37,68 @@ This web app was created through **vibe coding**: fast, idea-driven building whe
 - Tailwind CSS 4
 - Framer Motion
 - Lucide React
-- Riot Data Dragon and Riot API
+- Riot Data Dragon
+- Riot API
+- Vercel
+
+## Features
+
+### Random Champion Roulette
+
+A cinematic single champion randomizer with roulette motion, reveal states, champion art, role info, summoner spells, and suggested items.
+
+### Random Team 5v5
+
+Generate one or two League-style team lineups with lane filtering and side-based team layouts.
+
+### Player Lookup
+
+Search by Riot ID to inspect:
+
+- Profile information
+- Solo/Duo and Flex rank
+- Recent match history
+- Champion usage
+- Win rate and performance panels
+
+### Language Support
+
+The app supports:
+
+- Vietnamese
+- English
+
+Language changes apply instantly without reloading and are saved locally.
+
+### Settings
+
+Settings include:
+
+- Language
+- Theme
+- Effects level
+- Sound preference
+- Default region
+- Default team mode
+- Local history clearing
 
 ## Environment Variables
 
-Create a `.env.local` file for local development:
+For local development, create `.env.local`:
 
 ```env
 RIOT_API_KEY=your_riot_api_key_here
 ```
 
-On Vercel, add the same variable in:
+For Vercel, add the same variable in:
 
-`Project Settings -> Environment Variables`
+```text
+Project Settings -> Environment Variables
+```
 
-`RIOT_API_KEY` is required for player lookup. Champion data and random features use Riot Data Dragon.
+`RIOT_API_KEY` is required for player lookup. Champion data and randomizer features use Riot Data Dragon.
 
-## Local Development
+## Run Locally
 
 ```bash
 npm install
@@ -51,7 +111,7 @@ Open:
 http://localhost:3000
 ```
 
-## Build Check
+## Check Build
 
 ```bash
 npm run lint
@@ -60,13 +120,13 @@ npm run build
 
 ## Deploy To Vercel
 
-1. Push this project to GitHub.
+1. Push the project to GitHub.
 2. Import the repository in Vercel.
-3. Vercel should auto-detect **Next.js**.
-4. Add `RIOT_API_KEY` in Environment Variables.
+3. Use the default Next.js settings.
+4. Add `RIOT_API_KEY` to Environment Variables.
 5. Deploy.
 
-The included `vercel.json` pins the expected commands:
+The project includes `vercel.json`:
 
 ```json
 {
@@ -77,7 +137,8 @@ The included `vercel.json` pins the expected commands:
 }
 ```
 
-## Project Notes
+## Disclaimer
 
-Random LOL is a fan-made tool and is not endorsed by Riot Games. League of Legends assets and data are provided through Riot Data Dragon and Riot APIs.
+Random LOL is a fan-made project and is not endorsed by Riot Games.
 
+League of Legends assets and data are provided through Riot Data Dragon and Riot APIs.
