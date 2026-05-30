@@ -229,6 +229,7 @@ function buildMatchItems(
         id: match.metadata.matchId,
         championKey: identity?.key ?? participant.championName,
         championName: identity?.name ?? participant.championName,
+        championTags: identity?.tags ?? [],
         championIconUrl: identity?.iconUrl ?? `${DDRAGON_BASE}/cdn/${version}/img/champion/${participant.championName}.png`,
         level: participant.champLevel,
         win: participant.win,

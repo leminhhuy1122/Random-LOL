@@ -112,6 +112,7 @@ export async function getChampionIdentityMap(version: string) {
       {
         key: champion.id,
         name: champion.name,
+        tags: champion.tags,
         iconUrl: `${DDRAGON_BASE}/cdn/${version}/img/champion/${champion.id}.png`,
         splashUrl: getChampionSplashUrl(champion.id)
       }

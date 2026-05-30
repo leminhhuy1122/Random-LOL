@@ -2,6 +2,7 @@
 
 import { Activity, Crosshair, Dices, Radar, ShieldCheck, Swords, Users } from "lucide-react";
 import { AssetIcon } from "@/components/ui/AssetIcon";
+import { LaneIcon } from "@/components/ui/LaneIcon";
 import { LANES, LANE_BY_ID } from "@/constants/lanes";
 import { useI18n } from "@/i18n/I18nProvider";
 import { getLaneLabel } from "@/i18n/laneLabels";
@@ -68,7 +69,9 @@ export function TeamRandomTab({
             className={`draft-lane-chip ${selectedLanes[lane.id] ? "is-selected" : ""}`}
             onClick={() => onToggleLane(lane.id)}
           >
-            <span className={`draft-lane-orb bg-gradient-to-r ${lane.color}`}>{lane.icon}</span>
+            <span className={`draft-lane-orb bg-gradient-to-r ${lane.color}`}>
+              <LaneIcon lane={lane.id} />
+            </span>
             <strong>{lane.shortLabel}</strong>
             <small>{getLaneLabel(language, lane.id)}</small>
           </button>
@@ -168,7 +171,7 @@ function FormationSlot({ lane, pick, index }: { lane: LaneId; pick?: ChampionPic
     <div className={`formation-slot lane-${lane} ${pick ? "is-locked" : "is-empty"}`} style={{ animationDelay: `${index * 110}ms` }}>
       <div className="formation-node">
         <span className={`formation-lane-token bg-gradient-to-r ${laneMeta.color}`}>
-          <span>{laneMeta.icon}</span>
+          <LaneIcon lane={lane} className="lane-token-icon" />
           {laneMeta.shortLabel}
         </span>
 

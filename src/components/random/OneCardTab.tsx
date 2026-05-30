@@ -20,6 +20,7 @@ import type { LucideIcon } from "lucide-react";
 import { ResultChampionCard } from "@/components/champion/ResultChampionCard";
 import { ChampionRoulette } from "@/components/random/ChampionRoulette";
 import { AssetIcon } from "@/components/ui/AssetIcon";
+import { LaneIcon } from "@/components/ui/LaneIcon";
 import { LANE_BY_ID } from "@/constants/lanes";
 import { useI18n } from "@/i18n/I18nProvider";
 import { getLaneLabel } from "@/i18n/laneLabels";
@@ -149,7 +150,7 @@ function LockedResultVault({ pick, isRolling }: { pick?: ChampionPick; isRolling
       <div className="result-vault-content">
         <div className="result-vault-status">
           <span className={`lane-token bg-gradient-to-r ${lane.color}`}>
-            <span>{lane.icon}</span>
+            <LaneIcon lane={pick.lane} className="lane-token-icon" />
             {lane.shortLabel}
           </span>
           <span className="lock-token">
@@ -276,7 +277,7 @@ function CinematicRevealOverlay({ pick, onClose }: { pick: ChampionPick; onClose
         </div>
         <ResultChampionCard pick={pick} density="showcase" />
         <div className={`reveal-position-badge bg-gradient-to-r ${lane.color}`} aria-label={`${t("one.position")} ${getLaneLabel(language, pick.lane)}`}>
-          <span>{lane.icon}</span>
+          <LaneIcon lane={pick.lane} className="lane-token-icon" />
           <div>
             <small>{t("one.position")}</small>
             <strong>{lane.shortLabel}</strong>

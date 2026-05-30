@@ -1,9 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
-import { AlertTriangle, ChevronDown, ScanSearch, TrendingUp, UserRound, X } from "lucide-react";
+import { createPortal } from "react-dom";
+import { AlertTriangle, ChevronDown, Crosshair, Crown, Eye, Flame, ScanSearch, Shield, Sparkles, Swords, TrendingUp, UserRound, X } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { useI18n } from "@/i18n/I18nProvider";
+import type { TranslationKey } from "@/i18n/dictionaries";
+import type { ChampionTag } from "@/types/champion";
 import type { PlayerChampionStat, PlayerLookupResult, PlayerMatchItem, RankInfo } from "@/types/player";
 
 type PlayerChampionBannerProps = {
@@ -39,6 +43,15 @@ const ANALYSIS_ROWS = [
   { key: "objective", labelKey: "player.objective" },
   { key: "vision", labelKey: "player.vision" },
 ] as const;
+
+const ROLE_ACTIVITY: Array<{ icon: LucideIcon; labelKey: TranslationKey; tag: ChampionTag }> = [
+  { icon: Swords, labelKey: "player.roleFighter", tag: "Fighter" },
+  { icon: Shield, labelKey: "player.roleTank", tag: "Tank" },
+  { icon: Sparkles, labelKey: "player.roleMage", tag: "Mage" },
+  { icon: Flame, labelKey: "player.roleAssassin", tag: "Assassin" },
+  { icon: Eye, labelKey: "player.roleSupport", tag: "Support" },
+  { icon: Crosshair, labelKey: "player.roleMarksman", tag: "Marksman" },
+];
 
 export function PlayerChampionBanner({ player, loading = false, error }: PlayerChampionBannerProps) {
   const { t } = useI18n();
@@ -229,12 +242,14 @@ function OverviewTab({
           champions={player.mostPlayedChampions}
           mode="played"
           onViewAll={() => onOpenChampionModal("played")}
+          totalGames={player.performance.games}
         />
         <ChampionListPanel
           title={t("player.bestWinrateChampions")}
           champions={player.bestWinrateChampions}
           mode="winrate"
           onViewAll={() => onOpenChampionModal("winrate")}
+          totalGames={player.performance.games}
         />
       </section>
 
@@ -301,34 +316,52 @@ function ChampionListPanel({
   champions,
   mode,
   onViewAll,
+  totalGames,
 }: {
   title: string;
   champions: PlayerChampionStat[];
   mode: ChampionModalMode;
   onViewAll: () => void;
+  totalGames: number;
 }) {
   const { t } = useI18n();
   const maxGames = Math.max(...champions.map((champion) => champion.games), 1);
+  const safeTotalGames = Math.max(totalGames, 1);
 
   return (
     <section className="player-data-panel champion-list-panel">
       <div className="player-panel-head compact">
-        <h3>{title}</h3>
-        <button type="button" onClick={onViewAll}>{t("player.viewAll")}</button>
+        <div>
+          <h3>{title}</h3>
+          <span className="champion-list-hint">
+            {mode === "played" ? t("player.playedShareHint") : t("player.winrateShareHint")}
+          </span>
+        </div>
+        <button type="button" onClick={onViewAll} aria-label={`${t("player.viewAll")} ${title}`}>
+          {t("player.viewAll")}
+        </button>
       </div>
       <div className="champion-stat-list">
         {champions.length > 0 ? (
-          champions.map((champion) => (
-            <div className="champion-stat-row" key={`${title}-${champion.championKey}`}>
-              <img src={champion.championIconUrl} alt={champion.championName} loading="lazy" />
-              <strong>{champion.championName}</strong>
-              <span>{t("player.matchesCount", { count: champion.games })}</span>
-              <div className="champion-stat-bar">
-                <i style={{ width: `${mode === "played" ? (champion.games / maxGames) * 100 : champion.winrate}%` }} />
+          champions.map((champion) => {
+            const playedPercent = Math.round((champion.games / safeTotalGames) * 100);
+            const barWidth = mode === "played" ? (champion.games / maxGames) * 100 : champion.winrate;
+            const valueLabel = mode === "played"
+              ? t("player.playedShareValue", { percent: playedPercent })
+              : t("player.winrateShareValue", { percent: champion.winrate });
+
+            return (
+              <div className="champion-stat-row" key={`${title}-${champion.championKey}`}>
+                <img src={champion.championIconUrl} alt={champion.championName} loading="lazy" />
+                <strong>{champion.championName}</strong>
+                <span>{t("player.matchesCount", { count: champion.games })}</span>
+                <div className="champion-stat-bar" title={mode === "played" ? t("player.playedShareTooltip", { games: champion.games, total: safeTotalGames, percent: playedPercent }) : t("player.winrateShareTooltip", { wins: champion.wins, games: champion.games, percent: champion.winrate })}>
+                  <i style={{ width: `${barWidth}%` }} />
+                </div>
+                <em>{valueLabel}</em>
               </div>
-              <em>{mode === "played" ? `${champion.winrate}%` : `${champion.winrate}% (${champion.wins}W)`}</em>
-            </div>
-          ))
+            );
+          })
         ) : (
           <div className="player-empty-data">{t("player.noChampionData")}</div>
         )}
@@ -444,88 +477,198 @@ function AnalysisMetric({ label, value, percent, top }: { label: string; value: 
 
 function HistoryTab({ player }: { player: PlayerLookupResult }) {
   const { t } = useI18n();
-  const [filter, setFilter] = useState<MatchFilter>("all");
-  const [visibleMatches, setVisibleMatches] = useState(8);
-  const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
-  const [highlightedMatchId, setHighlightedMatchId] = useState<string | null>(null);
-
-  const filteredMatches = useMemo(() => filterMatches(player.matches, filter), [filter, player.matches]);
-  const selectedMatch = filteredMatches.find((match) => match.id === selectedMatchId) ?? filteredMatches[0];
-  const shownMatches = filteredMatches.slice(0, visibleMatches);
-
-  useEffect(() => {
-    setVisibleMatches(8);
-    setSelectedMatchId(null);
-    setHighlightedMatchId(null);
-  }, [filter, player.riotId]);
+  const [activeMatchId, setActiveMatchId] = useState<string | null>(null);
+  const recentMatches = player.matches.slice(0, 20);
 
   return (
-    <div className="player-history-grid">
-      <section className="player-match-panel is-history">
-        <div className="player-panel-head">
-          <h3>{t("player.matchHistory")}</h3>
+    <div className="lol-history-layout">
+      <section className="lol-history-main" aria-label={t("player.matchHistory")}>
+        <div className="lol-history-titlebar">
+          <h3>{t("player.recentMatchesTitle", { count: recentMatches.length })}</h3>
+          <div className="lol-history-tabs" aria-label={t("player.matchFilterLabel")}>
+            <button className="is-active" type="button">{t("player.overview")}</button>
+            <button type="button">{t("player.tft")}</button>
+          </div>
         </div>
-        <div className="match-filter-row" aria-label={t("player.matchFilterLabel")}>
-          {MATCH_FILTERS.map((item) => (
-            <button
-              key={item.key}
-              className={filter === item.key ? "is-active" : ""}
-              type="button"
-              onClick={() => setFilter(item.key)}
-            >
-              {item.fallback ?? t(item.labelKey)}
-            </button>
-          ))}
-        </div>
-        <div className="player-match-list history-list">
-          {shownMatches.length > 0 ? (
-            shownMatches.map((match) => (
-              <MatchRow
+
+        <div className="lol-match-list">
+          {recentMatches.length > 0 ? (
+            recentMatches.map((match) => (
+              <LoLMatchRow
                 key={match.id}
                 match={match}
-                active={selectedMatch?.id === match.id || highlightedMatchId === match.id}
-                onClick={() => setSelectedMatchId(match.id)}
-                onHover={setHighlightedMatchId}
+                active={activeMatchId === match.id}
+                onMouseEnter={() => setActiveMatchId(match.id)}
+                onMouseLeave={() => setActiveMatchId(null)}
               />
             ))
           ) : (
             <div className="player-empty-data">{t("player.noMatchesFilter")}</div>
           )}
         </div>
-        {filteredMatches.length > shownMatches.length && (
-          <button className="load-more-matches" type="button" onClick={() => setVisibleMatches((value) => value + 6)}>
-            {t("player.loadMoreMatches")}
-          </button>
-        )}
       </section>
 
-      <aside className="history-side-panel">
-        <RecentPerformancePanel
-          matches={filteredMatches.slice(0, 20)}
-          highlightedMatchId={highlightedMatchId}
-          onHover={setHighlightedMatchId}
-        />
-        <MatchDetailPanel match={selectedMatch} />
+      <aside className="lol-history-side">
+        <RecentChampionsPanel player={player} />
+        <RecentActivityPanel player={player} />
       </aside>
     </div>
   );
 }
 
-function MatchRow({
+function LoLMatchRow({
+  active,
   match,
-  active = false,
-  onClick,
-  onHover,
+  onMouseEnter,
+  onMouseLeave,
 }: {
+  active: boolean;
+  match: PlayerMatchItem;
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
+}) {
+  const { t } = useI18n();
+  const itemSlots = Array.from({ length: 7 }, (_, index) => match.items[index]);
+
+  return (
+    <article
+      className={`lol-match-row ${match.win ? "is-win" : "is-loss"} ${active ? "is-active" : ""}`}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
+      <div className="lol-match-champion">
+        <img src={match.championIconUrl} alt={match.championName} loading="lazy" />
+        <strong>{match.level}</strong>
+      </div>
+
+      <div className="lol-match-result">
+        <b>{match.win ? t("player.win") : t("player.loss")}</b>
+        <span>{getQueueLabel(match, t)}</span>
+        <div className="lol-match-spells">
+          {match.summonerSpells.map((spell, index) => (
+            <img key={`${match.id}-spell-${index}`} src={spell} alt="" loading="lazy" />
+          ))}
+        </div>
+      </div>
+
+      <div className="lol-match-loadout">
+        <div className="lol-item-strip">
+          {itemSlots.map((item, index) => (
+            item ? <img key={`${match.id}-item-${index}`} src={item} alt="" loading="lazy" /> : <span key={`${match.id}-empty-${index}`} />
+          ))}
+        </div>
+        <div className="lol-match-kda">
+          <strong>{match.kills} / {match.deaths} / {match.assists}</strong>
+          <span>{match.cs} <Sparkles className="h-4 w-4" /> {Math.round(match.damagePerMinute).toLocaleString("vi-VN")} <Shield className="h-4 w-4" /></span>
+        </div>
+      </div>
+
+      <div className="lol-match-map">
+        <strong>{match.queueName}</strong>
+        <span>{formatMatchDate(match.gameEndedAt)}</span>
+      </div>
+    </article>
+  );
+}
+
+function RecentChampionsPanel({ player }: { player: PlayerLookupResult }) {
+  const { t } = useI18n();
+  const totalGames = Math.max(player.performance.games, 1);
+  const champions = player.championStats.slice(0, 3);
+
+  return (
+    <section className="lol-side-card lol-recent-champions">
+      <h3>{t("player.recentChampions")}</h3>
+      <div className="lol-champion-card-row">
+        {champions.map((champion, index) => {
+          const percent = Math.round((champion.games / totalGames) * 100);
+          return (
+            <article className="lol-champion-card" key={champion.championKey}>
+              <div className="lol-champion-frame">
+                <img src={champion.championIconUrl} alt={champion.championName} loading="lazy" />
+                <span>{index + 1}</span>
+              </div>
+              <strong>{percent}%</strong>
+            </article>
+          );
+        })}
+      </div>
+      <p>{t("player.playedPercent")}</p>
+    </section>
+  );
+}
+
+function RecentActivityPanel({ player }: { player: PlayerLookupResult }) {
+  const { t } = useI18n();
+  const [hoveredRole, setHoveredRole] = useState<ChampionTag | null>(null);
+  const recentMatches = player.matches.slice(0, 20);
+  const totalMatches = Math.max(recentMatches.length, 1);
+  const roleStats = ROLE_ACTIVITY.map((role) => {
+    const count = recentMatches.filter((match) => (match.championTags?.[0] ?? getFallbackChampionTag(match)) === role.tag).length;
+    return {
+      ...role,
+      count,
+      label: t(role.labelKey),
+      percent: Math.round((count / totalMatches) * 100),
+    };
+  });
+
+  return (
+    <section className="lol-side-card lol-activity-panel">
+      <h3>{t("player.recentActivity")}</h3>
+      <span className="lol-activity-subtitle">{t("player.playedPercent")}</span>
+      <div className="lol-activity-bars">
+        {roleStats.map(({ icon: Icon, label, percent, count, tag }) => (
+          <div
+            className={`lol-activity-bar ${hoveredRole === tag ? "is-active" : ""}`}
+            key={tag}
+            onMouseEnter={() => setHoveredRole(tag)}
+            onMouseLeave={() => setHoveredRole(null)}
+          >
+            {hoveredRole === tag && (
+              <div className="lol-role-tooltip">
+                <strong>{label}</strong>
+                <span>{t("player.roleTooltipValue", { count, percent })}</span>
+              </div>
+            )}
+            <i aria-label={`${label}: ${percent}%`}>
+              <b style={{ height: `${Math.max(percent > 0 ? 6 : 0, Math.min(percent, 100))}%` }} />
+            </i>
+            <Icon className="h-5 w-5" />
+            <small>{label}</small>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function getFallbackChampionTag(match: PlayerMatchItem): ChampionTag {
+  const name = match.championName.toLowerCase();
+  if (["lux", "viktor", "ahri", "veigar", "xerath", "brand", "syndra", "orianna"].includes(name)) return "Mage";
+  if (["jhin", "ezreal", "caitlyn", "jinx", "lucian", "ashe", "kaisa", "miss fortune", "tristana"].includes(name)) return "Marksman";
+  if (["pyke", "zed", "talon", "akali", "katarina", "fizz", "qiyana"].includes(name)) return "Assassin";
+  if (["thresh", "lulu", "sona", "soraka", "nami", "yuumi", "milio"].includes(name)) return "Support";
+  if (["malphite", "ornn", "sion", "nautilus", "leona", "rammus"].includes(name)) return "Tank";
+  return "Fighter";
+}
+
+const MatchRow = forwardRef<HTMLElement, {
   match: PlayerMatchItem;
   active?: boolean;
   onClick?: () => void;
   onHover?: (id: string | null) => void;
-}) {
+}>(function MatchRow({
+  match,
+  active = false,
+  onClick,
+  onHover,
+}, ref) {
   const { t } = useI18n();
 
   return (
     <article
+      ref={ref}
       className={`match-row ${match.win ? "is-win" : "is-loss"} ${active ? "is-active" : ""}`}
       role={onClick ? "button" : undefined}
       tabIndex={onClick ? 0 : undefined}
@@ -566,16 +709,22 @@ function MatchRow({
       </div>
     </article>
   );
-}
+});
+
+MatchRow.displayName = "MatchRow";
 
 function RecentPerformancePanel({
   matches,
   highlightedMatchId,
   onHover,
+  onSelect,
+  selectedMatchId,
 }: {
   matches: PlayerMatchItem[];
   highlightedMatchId: string | null;
   onHover: (id: string | null) => void;
+  onSelect: (id: string) => void;
+  selectedMatchId: string | null;
 }) {
   const { t } = useI18n();
   const wins = matches.filter((match) => match.win).length;
@@ -583,21 +732,34 @@ function RecentPerformancePanel({
   const winrate = matches.length > 0 ? Math.round((wins / matches.length) * 100) : 0;
   const mvp = matches.filter((match) => match.isMvp).length;
   const ace = matches.filter((match) => match.isAce).length;
+  const formScores = matches.map(getPerformanceScore);
+  const averageScore = formScores.length > 0 ? Math.round(formScores.reduce((sum, score) => sum + score, 0) / formScores.length) : 0;
+  const formStatus = getFormStatus(matches);
 
   return (
-    <section className="player-data-panel recent-performance-panel">
-      <div className="player-panel-head">
-        <h3>{t("player.recent20")}</h3>
-        <span>{t("player.matchesCount", { count: matches.length })}</span>
+    <section className="player-data-panel recent-performance-panel form-timeline-card">
+      <div className="form-timeline-head">
+        <div>
+          <h3>{t("player.recent20")}</h3>
+          <span className={`form-status-badge ${formStatus.tone}`}>{t(formStatus.labelKey)}</span>
+        </div>
+        <span className="form-match-count">{t("player.matchesCount", { count: matches.length })}</span>
       </div>
       {matches.length > 0 ? (
         <>
-          <PerformanceLineChart matches={matches} highlightedMatchId={highlightedMatchId} onHover={onHover} />
-          <div className="performance-cards">
+          <PerformanceLineChart
+            matches={matches}
+            highlightedMatchId={highlightedMatchId}
+            onHover={onHover}
+            onSelect={onSelect}
+            selectedMatchId={selectedMatchId}
+          />
+          <div className="performance-cards form-stat-grid">
             <KpiCard value={`${winrate}%`} label={t("player.winrate")} tone="green" />
             <KpiCard value={`${wins}W - ${losses}L`} label={t("player.result")} tone="mixed" />
             <KpiCard value={mvp} label="MVP" />
             <KpiCard value={ace} label="ACE" />
+            <KpiCard value={averageScore} label={t("player.formAverage")} tone="mixed" />
           </div>
         </>
       ) : (
@@ -611,47 +773,181 @@ function PerformanceLineChart({
   matches,
   highlightedMatchId,
   onHover,
+  onSelect,
+  selectedMatchId,
 }: {
   matches: PlayerMatchItem[];
   highlightedMatchId: string | null;
   onHover: (id: string | null) => void;
+  onSelect: (id: string) => void;
+  selectedMatchId: string | null;
 }) {
   const { t } = useI18n();
   const width = 620;
-  const height = 220;
-  const paddingX = 28;
-  const paddingY = 28;
+  const height = 300;
+  const paddingX = 38;
+  const paddingTop = 28;
+  const paddingBottom = 42;
+  const chartHeight = height - paddingTop - paddingBottom;
   const points = [...matches].reverse().map((match, index, source) => {
-    const score = Math.max(14, Math.min(96, (match.win ? 58 : 36) + match.kda * 6 + match.killParticipation * 0.12));
+    const score = getPerformanceScore(match);
     const x = paddingX + (index * (width - paddingX * 2)) / Math.max(source.length - 1, 1);
-    const y = height - paddingY - (score / 100) * (height - paddingY * 2);
+    const y = height - paddingBottom - (score / 100) * chartHeight;
     return { ...match, x, y, score };
   });
   const path = points.map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`).join(" ");
+  const areaPath = points.length > 0
+    ? `${path} L ${points[points.length - 1].x} ${height - paddingBottom} L ${points[0].x} ${height - paddingBottom} Z`
+    : "";
+  const activePoint = points.find((point) => point.id === highlightedMatchId || point.id === selectedMatchId);
+  const tooltipWidth = 188;
+  const tooltipHeight = 112;
+  const tooltipX = activePoint ? Math.min(Math.max(activePoint.x + 14, 8), width - tooltipWidth - 8) : 0;
+  const tooltipY = activePoint ? Math.max(8, activePoint.y - tooltipHeight - 14) : 0;
 
   return (
-    <svg className="performance-line-chart" viewBox={`0 0 ${width} ${height}`} role="img" aria-label={t("player.chartLabel")}>
-      <line className="rank-lp-midline" x1="22" x2={width - 22} y1={height / 2} y2={height / 2} />
-      <path className="rank-lp-path-shadow" d={path} />
-      <path className="rank-lp-path" d={path} />
-      {points.map((point, index) => (
-        <g
-          key={point.id}
-          onMouseEnter={() => onHover(point.id)}
-          onMouseLeave={() => onHover(null)}
-        >
-          <circle className="chart-hit-area" cx={point.x} cy={point.y} r="16" />
-          <circle
-            className={`rank-dot ${point.win ? "is-win" : "is-loss"} ${point.id === highlightedMatchId ? "is-highlighted" : ""}`}
-            cx={point.x}
-            cy={point.y}
-            r={point.id === highlightedMatchId ? 8 : 5}
-          />
-          <text x={point.x} y={height - 6}>{index + 1}</text>
-        </g>
-      ))}
-    </svg>
+    <div className="form-chart-wrap">
+      <svg className="performance-line-chart form-timeline-chart" viewBox={`0 0 ${width} ${height}`} role="img" aria-label={t("player.chartLabel")}>
+        <defs>
+          <linearGradient id="formLineGradient" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%" stopColor="#22d3ee" />
+            <stop offset="54%" stopColor="#4ade80" />
+            <stop offset="100%" stopColor="#f5d986" />
+          </linearGradient>
+          <linearGradient id="formAreaGradient" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="#22d3ee" stopOpacity="0.18" />
+            <stop offset="55%" stopColor="#4ade80" stopOpacity="0.08" />
+            <stop offset="100%" stopColor="#020617" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+
+        <rect className="form-zone form-zone-carry" x="20" y={paddingTop} width={width - 40} height={chartHeight * 0.25} rx="12" />
+        <rect className="form-zone form-zone-stable" x="20" y={paddingTop + chartHeight * 0.25} width={width - 40} height={chartHeight * 0.3} rx="12" />
+        <rect className="form-zone form-zone-danger" x="20" y={paddingTop + chartHeight * 0.55} width={width - 40} height={chartHeight * 0.45} rx="12" />
+        <text className="form-zone-label" x="30" y={paddingTop + 18}>{t("player.formCarry")}</text>
+        <text className="form-zone-label" x="30" y={paddingTop + chartHeight * 0.25 + 20}>{t("player.formStable")}</text>
+        <text className="form-zone-label" x="30" y={height - paddingBottom - 12}>{t("player.formDanger")}</text>
+
+        {[0, 25, 50, 75, 100].map((value) => {
+          const y = height - paddingBottom - (value / 100) * chartHeight;
+          return <line key={value} className="form-grid-line" x1="20" x2={width - 20} y1={y} y2={y} />;
+        })}
+        {points.map((point) => <line key={`grid-${point.id}`} className="form-grid-line vertical" x1={point.x} x2={point.x} y1={paddingTop} y2={height - paddingBottom} />)}
+
+        {areaPath && <path className="form-area-path" d={areaPath} />}
+        <path className="form-line-shadow" d={path} />
+        <path className="form-line-path" d={path} />
+        {points.map((point, index) => (
+          <g
+            key={point.id}
+            className="form-point-group"
+            onMouseEnter={() => onHover(point.id)}
+            onMouseLeave={() => onHover(null)}
+            onClick={() => onSelect(point.id)}
+            tabIndex={0}
+            role="button"
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                onSelect(point.id);
+              }
+            }}
+          >
+            <circle className="chart-hit-area" cx={point.x} cy={point.y} r="16" />
+            {(point.isMvp || point.isAce) && (
+              <circle
+                className={`form-spotlight ${point.id === highlightedMatchId || point.id === selectedMatchId ? "is-highlighted" : ""}`}
+                cx={point.x}
+                cy={point.y}
+                r="14"
+              />
+            )}
+            <circle
+              className={`rank-dot ${point.win ? "is-win" : "is-loss"} ${point.isMvp || point.isAce ? "is-standout" : ""} ${point.id === highlightedMatchId || point.id === selectedMatchId ? "is-highlighted" : ""}`}
+              cx={point.x}
+              cy={point.y}
+              r={point.id === highlightedMatchId || point.id === selectedMatchId ? 8 : 5.5}
+            />
+            {(point.isMvp || point.isAce) && (
+              <Crown className="form-crown-icon" x={point.x - 6} y={point.y - 24} width="12" height="12" />
+            )}
+            <text className="chart-index" x={point.x} y={height - 11}>{index + 1}</text>
+          </g>
+        ))}
+
+        {activePoint && (
+          <g className="form-chart-tooltip" transform={`translate(${tooltipX} ${tooltipY})`}>
+            <rect width={tooltipWidth} height={tooltipHeight} rx="12" />
+            <text className="tooltip-title" x="12" y="23">{activePoint.championName}</text>
+            <text className={activePoint.win ? "tooltip-win" : "tooltip-loss"} x="12" y="43">
+              {activePoint.win ? t("player.win") : t("player.loss")} - {activePoint.score} {t("player.formScoreShort")}
+            </text>
+            <text x="12" y="63">{activePoint.kills}/{activePoint.deaths}/{activePoint.assists} - {activePoint.kda.toFixed(2)} KDA</text>
+            <text x="12" y="81">KP {activePoint.killParticipation}% - CS {activePoint.csPerMinute}</text>
+            <text x="12" y="99">{timeAgo(activePoint.gameEndedAt, t)} - {activePoint.isMvp ? "MVP" : activePoint.isAce ? "ACE" : getQueueLabel(activePoint, t)}</text>
+          </g>
+        )}
+      </svg>
+    </div>
   );
+}
+
+function getPerformanceScore(match: PlayerMatchItem) {
+  const score =
+    40 +
+    (match.win ? 20 : 0) +
+    Math.min(match.kda * 6, 25) +
+    Math.min(match.csPerMinute * 2, 15) +
+    Math.min(match.killParticipation * 0.2, 15) +
+    Math.min(match.damagePerMinute / 140, 10) +
+    (match.isMvp || match.isAce ? 8 : 0);
+
+  return Math.round(Math.max(0, Math.min(score, 100)));
+}
+
+function getCurrentStreak(matches: PlayerMatchItem[]) {
+  if (matches.length === 0) return { type: "none" as const, count: 0 };
+  const type = matches[0].win ? "win" : "loss";
+  let count = 0;
+
+  for (const match of matches) {
+    if ((type === "win" && match.win) || (type === "loss" && !match.win)) {
+      count += 1;
+    } else {
+      break;
+    }
+  }
+
+  return { type, count };
+}
+
+function getFormStatus(matches: PlayerMatchItem[]) {
+  const streak = getCurrentStreak(matches);
+  if (streak.type === "win" && streak.count >= 3) {
+    return { labelKey: "player.formWinStreak" as const, tone: "is-good" };
+  }
+  if (streak.type === "loss" && streak.count >= 3) {
+    return { labelKey: "player.formLoseStreak" as const, tone: "is-danger" };
+  }
+
+  const recentFive = matches.slice(0, 5).map(getPerformanceScore);
+  const previousFive = matches.slice(5, 10).map(getPerformanceScore);
+  if (recentFive.length >= 5 && previousFive.length >= 5) {
+    const recentAverage = recentFive.reduce((sum, score) => sum + score, 0) / recentFive.length;
+    const previousAverage = previousFive.reduce((sum, score) => sum + score, 0) / previousFive.length;
+    if (recentAverage - previousAverage >= 6) {
+      return { labelKey: "player.formRising" as const, tone: "is-good" };
+    }
+    if (previousAverage - recentAverage >= 6) {
+      return { labelKey: "player.formFalling" as const, tone: "is-danger" };
+    }
+  }
+
+  const wins = matches.filter((match) => match.win).length;
+  const winrate = matches.length > 0 ? (wins / matches.length) * 100 : 0;
+  if (winrate >= 65) return { labelKey: "player.formHigh" as const, tone: "is-good" };
+  if (winrate >= 50) return { labelKey: "player.formStableStatus" as const, tone: "is-stable" };
+  return { labelKey: "player.formNeedsWork" as const, tone: "is-danger" };
 }
 
 function KpiCard({ value, label, tone }: { value: number | string; label: string; tone?: "green" | "mixed" }) {
@@ -707,12 +1003,19 @@ function ChampionStatsModal({
   onClose: () => void;
 }) {
   const { t } = useI18n();
+  const [mounted, setMounted] = useState(false);
   const sortedChampions = [...champions].sort((a, b) =>
     mode === "played" ? b.games - a.games || b.winrate - a.winrate : b.winrate - a.winrate || b.games - a.games
   );
   const title = mode === "played" ? t("player.modalPlayedLabel") : t("player.modalWinrateLabel");
 
-  return (
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
+  return createPortal(
     <div className="champion-modal-backdrop" onClick={onClose}>
       <div
         className="champion-modal"
@@ -748,7 +1051,8 @@ function ChampionStatsModal({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -794,6 +1098,16 @@ function timeAgo(timestamp: number, t: ReturnType<typeof useI18n>["t"]) {
   const diffHours = Math.max(1, Math.round((Date.now() - timestamp) / 3600000));
   if (diffHours < 24) return t("player.hoursAgo", { hours: diffHours });
   return diffHours < 48 ? t("player.yesterday") : t("player.daysAgo", { days: Math.round(diffHours / 24) });
+}
+
+function formatMatchDate(timestamp: number) {
+  return new Intl.DateTimeFormat("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(timestamp);
 }
 
 function formatDuration(seconds: number) {

@@ -892,6 +892,23 @@ button:disabled {
   color: inherit;
 }
 
+.lane-icon-svg,
+.lane-token-icon {
+  flex: 0 0 auto;
+  color: rgba(255, 255, 255, 0.96);
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.55));
+}
+
+.lane-icon-svg {
+  height: 24px;
+  width: 24px;
+}
+
+.lane-token-icon {
+  height: 15px;
+  width: 15px;
+}
+
 .panel-heading-row,
 .roster-header,
 .timeline-head {
@@ -1920,6 +1937,19 @@ button:disabled {
   margin-bottom: 12px;
 }
 
+.player-panel-head.compact > div {
+  min-width: 0;
+}
+
+.champion-list-hint {
+  display: block;
+  margin-top: 5px;
+  color: rgba(174, 184, 199, 0.74);
+  font-size: 0.78rem;
+  font-weight: 750;
+  line-height: 1.35;
+}
+
 .player-panel-head button,
 .player-panel-actions button {
   display: inline-flex;
@@ -1931,6 +1961,26 @@ button:disabled {
   padding: 8px 10px;
   color: #cbd5e1;
   font-size: 0.82rem;
+}
+
+.player-panel-head button {
+  position: relative;
+  z-index: 3;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.player-panel-head button:hover,
+.player-panel-head button:focus-visible {
+  border-color: rgba(212, 185, 122, 0.46);
+  background: rgba(212, 185, 122, 0.12);
+  color: #f5d986;
+  outline: none;
+  transform: translateY(-1px);
 }
 
 .player-panel-actions {
@@ -1981,6 +2031,8 @@ button:disabled {
 
 .champion-stat-row em {
   color: #dbeafe;
+  font-size: 0.8rem;
+  font-weight: 900;
 }
 
 .champion-stat-bar {
@@ -2624,6 +2676,554 @@ button:disabled {
   grid-template-columns: minmax(520px, 1.25fr) minmax(360px, 0.75fr);
 }
 
+.lol-history-layout {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(680px, 1fr) 390px;
+  gap: 34px;
+  min-height: 760px;
+  padding: 54px 64px 38px;
+}
+
+.lol-history-layout::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(90deg, rgba(0, 8, 14, 0.96) 0%, rgba(0, 13, 20, 0.9) 54%, rgba(2, 6, 14, 0.96) 100%),
+    radial-gradient(circle at 52% 42%, rgba(39, 217, 255, 0.08), transparent 32%);
+}
+
+.lol-history-titlebar {
+  display: grid;
+  gap: 24px;
+  margin-bottom: 22px;
+}
+
+.lol-history-titlebar h3,
+.lol-side-card h3 {
+  margin: 0;
+  color: #f6efe0;
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  font-weight: 950;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-shadow: 0 3px 16px rgba(0, 0, 0, 0.55);
+}
+
+.lol-history-tabs {
+  display: flex;
+  gap: 24px;
+}
+
+.lol-history-tabs button {
+  position: relative;
+  border: 0;
+  background: transparent;
+  color: rgba(242, 234, 210, 0.74);
+  cursor: pointer;
+  font-family: var(--font-heading);
+  font-size: 1.06rem;
+  font-weight: 950;
+  letter-spacing: 0.14em;
+  padding: 0 22px 12px;
+  text-transform: uppercase;
+}
+
+.lol-history-tabs button.is-active {
+  color: #f6efe0;
+}
+
+.lol-history-tabs button.is-active::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #c7a44e, #f5d986);
+  box-shadow: 0 0 18px rgba(245, 217, 134, 0.25);
+}
+
+.lol-match-list {
+  max-height: 900px;
+  overflow-y: auto;
+  padding-right: 16px;
+  scrollbar-color: rgba(180, 137, 49, 0.78) rgba(180, 137, 49, 0.12);
+  scrollbar-width: thin;
+}
+
+.lol-match-row {
+  display: grid;
+  grid-template-columns: 128px minmax(160px, 0.7fr) minmax(360px, 1.4fr) minmax(190px, 0.58fr);
+  align-items: center;
+  gap: 22px;
+  min-height: 150px;
+  border-bottom: 1px solid rgba(198, 191, 170, 0.16);
+  color: rgba(220, 214, 195, 0.78);
+  padding: 20px 0;
+  transition:
+    background 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.lol-match-row:hover,
+.lol-match-row.is-active {
+  background:
+    linear-gradient(90deg, rgba(39, 217, 255, 0.055), rgba(212, 185, 122, 0.04), transparent);
+  box-shadow: inset 3px 0 0 rgba(212, 185, 122, 0.7);
+  transform: translateX(2px);
+}
+
+.lol-match-champion {
+  position: relative;
+  height: 94px;
+  width: 94px;
+}
+
+.lol-match-champion img {
+  height: 94px;
+  width: 94px;
+  border: 2px solid rgba(212, 185, 122, 0.74);
+  border-radius: 999px;
+  object-fit: cover;
+  box-shadow:
+    0 0 18px rgba(212, 185, 122, 0.18),
+    inset 0 0 0 2px rgba(2, 6, 14, 0.9);
+}
+
+.lol-match-champion strong {
+  position: absolute;
+  right: -8px;
+  bottom: 7px;
+  display: grid;
+  min-width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid rgba(245, 217, 134, 0.85);
+  border-radius: 999px;
+  background: #07111a;
+  color: #d9c88f;
+  font-size: 0.95rem;
+  font-weight: 950;
+}
+
+.lol-match-result {
+  display: grid;
+  gap: 7px;
+}
+
+.lol-match-result b {
+  color: #35e6b2;
+  font-family: var(--font-heading);
+  font-size: 1.34rem;
+  font-weight: 950;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.lol-match-row.is-loss .lol-match-result b {
+  color: #ff4565;
+}
+
+.lol-match-result span,
+.lol-match-map strong,
+.lol-match-map span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lol-match-result span,
+.lol-match-map span {
+  color: rgba(220, 214, 195, 0.72);
+  font-size: 1rem;
+  font-weight: 850;
+}
+
+.lol-match-spells {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.lol-match-spells img {
+  height: 34px;
+  width: 34px;
+  border: 1px solid rgba(212, 185, 122, 0.45);
+  object-fit: cover;
+}
+
+.lol-match-loadout {
+  display: grid;
+  gap: 14px;
+}
+
+.lol-item-strip {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  max-width: 448px;
+}
+
+.lol-item-strip img,
+.lol-item-strip span {
+  display: block;
+  height: 48px;
+  width: 64px;
+  border: 1px solid rgba(180, 137, 49, 0.45);
+  background: rgba(0, 5, 8, 0.82);
+  object-fit: cover;
+}
+
+.lol-match-kda {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  color: rgba(220, 214, 195, 0.76);
+  font-family: var(--font-heading);
+}
+
+.lol-match-kda strong {
+  color: rgba(237, 231, 213, 0.86);
+  font-size: 1.36rem;
+  letter-spacing: 0.08em;
+}
+
+.lol-match-kda span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 1.1rem;
+  font-weight: 950;
+}
+
+.lol-match-kda svg {
+  color: rgba(220, 214, 195, 0.55);
+}
+
+.lol-match-map {
+  display: grid;
+  gap: 12px;
+  align-content: center;
+}
+
+.lol-match-map strong {
+  color: rgba(220, 214, 195, 0.76);
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.lol-history-side {
+  display: grid;
+  align-content: start;
+  gap: 46px;
+  padding-top: 92px;
+}
+
+.lol-side-card {
+  position: relative;
+  border-bottom: 1px solid rgba(198, 191, 170, 0.15);
+  padding-bottom: 42px;
+}
+
+.lol-champion-card-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+  margin-top: 26px;
+}
+
+.lol-champion-card {
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+}
+
+.lol-champion-frame {
+  position: relative;
+  height: 126px;
+  width: 92px;
+}
+
+.lol-champion-frame img {
+  height: 126px;
+  width: 92px;
+  border: 2px solid rgba(180, 137, 49, 0.52);
+  object-fit: cover;
+  box-shadow: 0 18px 28px rgba(0, 0, 0, 0.38);
+}
+
+.lol-champion-frame span {
+  position: absolute;
+  left: 50%;
+  bottom: -18px;
+  display: grid;
+  height: 48px;
+  width: 48px;
+  place-items: center;
+  border: 2px solid rgba(180, 137, 49, 0.86);
+  border-radius: 50% 50% 44% 44%;
+  background:
+    radial-gradient(circle at 50% 38%, rgba(39, 217, 255, 0.22), transparent 34%),
+    linear-gradient(180deg, #6f5526, #111827);
+  color: #f5d986;
+  font-family: var(--font-heading);
+  font-weight: 950;
+  transform: translateX(-50%);
+  box-shadow: 0 0 22px rgba(212, 185, 122, 0.24);
+}
+
+.lol-champion-card strong {
+  color: #d8c895;
+  font-family: var(--font-heading);
+  font-size: 1.32rem;
+  font-style: italic;
+  letter-spacing: 0.1em;
+}
+
+.lol-side-card p {
+  margin: 0;
+  color: rgba(220, 214, 195, 0.7);
+  font-weight: 850;
+  text-align: center;
+}
+
+.lol-activity-subtitle {
+  display: block;
+  margin-top: 10px;
+  color: rgba(220, 214, 195, 0.62);
+  font-size: 0.92rem;
+  font-weight: 850;
+  text-align: center;
+}
+
+.lol-activity-bars {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.lol-activity-bar {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.lol-activity-bar i {
+  position: relative;
+  display: block;
+  height: 168px;
+  width: 14px;
+  border: 2px solid rgba(180, 137, 49, 0.55);
+  background: rgba(0, 5, 8, 0.48);
+}
+
+.lol-activity-bar b {
+  position: absolute;
+  right: 2px;
+  bottom: 0;
+  left: 2px;
+  background: linear-gradient(180deg, #22d3ee, #0e7490);
+  box-shadow: 0 0 14px rgba(34, 211, 238, 0.42);
+  transition: height 220ms ease, box-shadow 180ms ease;
+}
+
+.lol-activity-bar svg {
+  color: rgba(212, 185, 122, 0.6);
+  filter: drop-shadow(0 0 8px rgba(212, 185, 122, 0.18));
+}
+
+.lol-activity-bar small {
+  width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: rgba(220, 214, 195, 0.64);
+  font-size: 0.66rem;
+  font-weight: 950;
+  line-height: 1.1;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.lol-activity-bar.is-active i {
+  border-color: rgba(245, 217, 134, 0.86);
+  box-shadow: 0 0 18px rgba(245, 217, 134, 0.18);
+}
+
+.lol-activity-bar.is-active b {
+  box-shadow:
+    0 0 14px rgba(34, 211, 238, 0.58),
+    0 0 22px rgba(245, 217, 134, 0.22);
+}
+
+.lol-role-tooltip {
+  position: absolute;
+  bottom: calc(100% + 14px);
+  left: 50%;
+  z-index: 6;
+  min-width: 156px;
+  border: 2px solid rgba(180, 137, 49, 0.66);
+  background: rgba(28, 30, 35, 0.98);
+  padding: 16px 18px;
+  text-align: center;
+  transform: translateX(-50%);
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.42);
+}
+
+.lol-role-tooltip::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -14px;
+  width: 24px;
+  height: 24px;
+  border-right: 2px solid rgba(180, 137, 49, 0.66);
+  border-bottom: 2px solid rgba(180, 137, 49, 0.66);
+  background: rgba(28, 30, 35, 0.98);
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.lol-role-tooltip strong,
+.lol-role-tooltip span {
+  position: relative;
+  z-index: 1;
+  display: block;
+}
+
+.lol-role-tooltip strong {
+  color: #f6efe0;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.lol-role-tooltip span {
+  margin-top: 7px;
+  color: rgba(220, 214, 195, 0.7);
+  font-size: 0.92rem;
+  font-weight: 850;
+}
+
+@media (max-width: 1280px) {
+  .lol-history-layout {
+    grid-template-columns: 1fr;
+    padding: 42px 38px 34px;
+  }
+
+  .lol-history-side {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 28px;
+    padding-top: 0;
+  }
+}
+
+@media (max-width: 940px) {
+  .lol-history-layout {
+    padding: 30px 18px;
+  }
+
+  .lol-match-row {
+    grid-template-columns: 82px minmax(120px, 0.85fr) minmax(260px, 1.2fr);
+    gap: 14px;
+  }
+
+  .lol-match-loadout {
+    grid-column: 1 / -1;
+  }
+
+  .lol-match-map {
+    grid-column: 2 / -1;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .lol-history-side {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .lol-history-titlebar h3,
+  .lol-side-card h3 {
+    font-size: 1rem;
+  }
+
+  .lol-history-tabs {
+    gap: 10px;
+  }
+
+  .lol-match-list {
+    padding-right: 6px;
+  }
+
+  .lol-match-row {
+    grid-template-columns: 76px minmax(0, 1fr);
+    min-height: auto;
+    gap: 12px;
+    padding: 16px 0;
+  }
+
+  .lol-match-champion,
+  .lol-match-champion img {
+    height: 68px;
+    width: 68px;
+  }
+
+  .lol-match-champion strong {
+    height: 28px;
+    min-width: 28px;
+    font-size: 0.78rem;
+  }
+
+  .lol-match-loadout,
+  .lol-match-map {
+    grid-column: 1 / -1;
+  }
+
+  .lol-item-strip {
+    max-width: none;
+  }
+
+  .lol-item-strip img,
+  .lol-item-strip span {
+    height: 38px;
+    width: 100%;
+  }
+
+  .lol-match-kda {
+    justify-content: flex-start;
+    gap: 14px;
+  }
+
+  .lol-match-kda strong {
+    font-size: 1.05rem;
+  }
+
+  .lol-champion-card-row {
+    gap: 12px;
+  }
+
+  .lol-champion-frame,
+  .lol-champion-frame img {
+    height: 104px;
+    width: 76px;
+  }
+
+  .lol-activity-bars {
+    gap: 12px;
+  }
+}
+
 .player-match-panel.is-history {
   min-height: 680px;
 }
@@ -2816,6 +3416,285 @@ button:disabled {
 
 .history-side-panel .performance-cards {
   grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.form-timeline-card {
+  min-height: 420px;
+  overflow: hidden;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(39, 217, 255, 0.08), transparent 35%),
+    radial-gradient(circle at 88% 20%, rgba(212, 185, 122, 0.08), transparent 32%),
+    linear-gradient(180deg, rgba(9, 16, 30, 0.96), rgba(5, 10, 18, 0.96));
+  border-color: rgba(212, 185, 122, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 18px 60px rgba(0, 0, 0, 0.28);
+  padding: 22px;
+}
+
+.form-timeline-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.form-timeline-head h3 {
+  font-size: 1.08rem;
+}
+
+.form-status-badge,
+.form-match-count {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 950;
+}
+
+.form-status-badge {
+  margin-top: 10px;
+  border: 1px solid rgba(39, 217, 255, 0.22);
+  background: rgba(39, 217, 255, 0.09);
+  color: #bff6ff;
+  padding: 0 10px;
+  box-shadow: 0 0 20px rgba(39, 217, 255, 0.08);
+}
+
+.form-status-badge.is-good {
+  border-color: rgba(74, 222, 128, 0.28);
+  background: rgba(34, 197, 94, 0.1);
+  color: #bbf7d0;
+}
+
+.form-status-badge.is-danger {
+  border-color: rgba(248, 113, 113, 0.3);
+  background: rgba(127, 29, 29, 0.22);
+  color: #fecaca;
+}
+
+.form-status-badge.is-stable {
+  border-color: rgba(212, 185, 122, 0.28);
+  background: rgba(212, 185, 122, 0.12);
+  color: #f5d986;
+}
+
+.form-match-count {
+  flex: 0 0 auto;
+  border: 1px solid rgba(212, 185, 122, 0.2);
+  background: rgba(5, 10, 20, 0.58);
+  color: #dbeafe;
+  padding: 0 11px;
+}
+
+.form-chart-wrap {
+  height: 280px;
+  margin-top: 16px;
+}
+
+.form-timeline-chart {
+  height: 100%;
+  min-height: 280px;
+  overflow: visible;
+}
+
+.form-timeline-chart .form-zone-carry {
+  fill: rgba(34, 211, 238, 0.075);
+}
+
+.form-timeline-chart .form-zone-stable {
+  fill: rgba(15, 23, 42, 0.24);
+}
+
+.form-timeline-chart .form-zone-danger {
+  fill: rgba(127, 29, 29, 0.14);
+}
+
+.form-timeline-chart .form-zone-label {
+  fill: rgba(219, 231, 243, 0.4);
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  text-anchor: start;
+  text-transform: uppercase;
+}
+
+.form-timeline-chart .form-grid-line {
+  stroke: rgba(148, 163, 184, 0.11);
+  stroke-width: 1;
+}
+
+.form-timeline-chart .form-grid-line.vertical {
+  stroke: rgba(148, 163, 184, 0.045);
+}
+
+.form-timeline-chart .form-area-path {
+  fill: url("#formAreaGradient");
+  stroke: none;
+}
+
+.form-timeline-chart .form-line-shadow {
+  fill: none;
+  stroke: rgba(39, 217, 255, 0.26);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 8;
+  filter: blur(5px);
+}
+
+.form-timeline-chart .form-line-path {
+  fill: none;
+  stroke: url("#formLineGradient");
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+  filter:
+    drop-shadow(0 0 8px rgba(39, 217, 255, 0.38))
+    drop-shadow(0 0 12px rgba(74, 222, 128, 0.18));
+}
+
+.form-point-group {
+  cursor: pointer;
+  outline: none;
+}
+
+.form-timeline-chart .chart-hit-area {
+  fill: transparent;
+  stroke: transparent;
+  stroke-width: 0;
+}
+
+.form-timeline-chart .rank-dot {
+  stroke: rgba(2, 6, 23, 0.95);
+  stroke-width: 2.5;
+  transition:
+    r 160ms ease,
+    filter 160ms ease;
+}
+
+.form-timeline-chart .rank-dot.is-win {
+  fill: #22c55e;
+  filter: drop-shadow(0 0 7px rgba(34, 197, 94, 0.58));
+}
+
+.form-timeline-chart .rank-dot.is-loss {
+  fill: #ef4444;
+  filter: drop-shadow(0 0 7px rgba(239, 68, 68, 0.52));
+}
+
+.form-timeline-chart .rank-dot.is-standout {
+  fill: #f5d986;
+  filter: drop-shadow(0 0 10px rgba(245, 217, 134, 0.72));
+}
+
+.form-timeline-chart .rank-dot.is-highlighted {
+  filter:
+    drop-shadow(0 0 10px rgba(39, 217, 255, 0.78))
+    drop-shadow(0 0 18px rgba(245, 217, 134, 0.32));
+}
+
+.form-spotlight {
+  fill: rgba(245, 217, 134, 0.1);
+  stroke: rgba(245, 217, 134, 0.62);
+  stroke-width: 1.5;
+  filter: drop-shadow(0 0 12px rgba(245, 217, 134, 0.52));
+}
+
+.form-spotlight.is-highlighted {
+  fill: rgba(245, 217, 134, 0.18);
+}
+
+.form-crown-icon {
+  color: #f5d986;
+  filter: drop-shadow(0 0 8px rgba(245, 217, 134, 0.58));
+  pointer-events: none;
+}
+
+.form-timeline-chart .chart-index {
+  fill: rgba(203, 213, 225, 0.7);
+  font-size: 10px;
+  font-weight: 850;
+  text-anchor: middle;
+}
+
+.form-chart-tooltip {
+  pointer-events: none;
+  filter: drop-shadow(0 16px 28px rgba(0, 0, 0, 0.44));
+}
+
+.form-chart-tooltip rect {
+  fill: rgba(7, 13, 26, 0.98);
+  stroke: rgba(212, 185, 122, 0.32);
+  stroke-width: 1;
+}
+
+.form-chart-tooltip text {
+  fill: #dbe7f3;
+  font-size: 10px;
+  font-weight: 800;
+  text-anchor: start;
+}
+
+.form-chart-tooltip .tooltip-title {
+  fill: #f8fafc;
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.form-chart-tooltip .tooltip-win {
+  fill: #86efac;
+}
+
+.form-chart-tooltip .tooltip-loss {
+  fill: #fca5a5;
+}
+
+.history-side-panel .performance-cards.form-stat-grid,
+.performance-cards.form-stat-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.form-stat-grid .kpi-card {
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.66), rgba(3, 7, 18, 0.7));
+  padding: 10px 8px;
+}
+
+.form-stat-grid .kpi-card strong {
+  font-size: 1.12rem;
+}
+
+@media (max-width: 1180px) {
+  .history-side-panel .performance-cards.form-stat-grid,
+  .performance-cards.form-stat-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .form-timeline-card {
+    min-height: 390px;
+    padding: 16px;
+  }
+
+  .form-timeline-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .form-chart-wrap {
+    height: 250px;
+  }
+
+  .history-side-panel .performance-cards.form-stat-grid,
+  .performance-cards.form-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .match-detail-card {
@@ -3219,6 +4098,97 @@ button:disabled {
   min-width: 190px;
   background:
     linear-gradient(145deg, rgba(2, 6, 23, 0.92), rgba(15, 23, 42, 0.86));
+}
+
+.custom-select {
+  position: relative;
+  width: 190px;
+  max-width: 100%;
+}
+
+.custom-select-trigger {
+  display: flex;
+  height: 44px;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid rgba(39, 217, 255, 0.18);
+  border-radius: 12px;
+  background: rgba(5, 10, 20, 0.86);
+  color: #f4f7fb;
+  cursor: pointer;
+  padding: 0 14px;
+  font-weight: 900;
+  outline: none;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+
+.custom-select-trigger:hover,
+.custom-select-trigger:focus-visible,
+.custom-select.is-open .custom-select-trigger {
+  border-color: rgba(212, 185, 122, 0.36);
+  box-shadow: 0 0 18px rgba(39, 217, 255, 0.08);
+}
+
+.custom-select-trigger.locked {
+  cursor: default;
+  opacity: 0.9;
+}
+
+.custom-select-chevron {
+  color: var(--gold-soft);
+  transition: transform 160ms ease;
+}
+
+.custom-select.is-open .custom-select-chevron {
+  transform: rotate(180deg);
+}
+
+.custom-select-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  left: 0;
+  z-index: 100;
+  max-height: min(240px, 45vh);
+  overflow-y: auto;
+  border: 1px solid rgba(39, 217, 255, 0.22);
+  border-radius: 12px;
+  background: rgba(7, 13, 26, 0.98);
+  box-shadow:
+    0 18px 50px rgba(0, 0, 0, 0.5),
+    0 0 24px rgba(39, 217, 255, 0.08);
+  padding: 6px;
+}
+
+.custom-select-option {
+  display: flex;
+  min-height: 36px;
+  width: 100%;
+  align-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #dbe7f3;
+  cursor: pointer;
+  padding: 0 10px;
+  font-weight: 850;
+  text-align: left;
+}
+
+.custom-select-option:hover,
+.custom-select-option:focus-visible {
+  background: rgba(39, 217, 255, 0.12);
+  outline: none;
+}
+
+.custom-select-option.active {
+  background: rgba(212, 185, 122, 0.18);
+  color: #f5d986;
 }
 
 .settings-danger-button,
@@ -8335,6 +9305,21 @@ button:disabled {
   color: #cbd5e1;
   padding: 10px;
   text-align: left;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease;
+}
+
+.draft-lane-chip:hover {
+  border-color: rgba(212, 185, 122, 0.45);
+  background:
+    linear-gradient(135deg, rgba(7, 13, 26, 0.86), rgba(10, 24, 38, 0.58));
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.32),
+    0 0 24px rgba(39, 217, 255, 0.08);
+  transform: translateY(-2px);
 }
 
 .draft-lane-chip.is-selected {
@@ -8355,8 +9340,10 @@ button:disabled {
   width: 42px;
   place-items: center;
   border-radius: 11px;
-  color: #03111c;
-  font-weight: 950;
+  color: rgba(255, 255, 255, 0.96);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 12px 28px rgba(0, 0, 0, 0.35);
 }
 
 .draft-lane-chip strong,
@@ -8671,6 +9658,11 @@ button:disabled {
   padding: 0 11px;
   font-size: 0.76rem;
   font-weight: 950;
+}
+
+.formation-lane-token .lane-token-icon {
+  height: 16px;
+  width: 16px;
 }
 
 .formation-champion-content {

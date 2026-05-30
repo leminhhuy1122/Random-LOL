@@ -2,6 +2,7 @@
 
 import {
   Brush,
+  ChevronDown,
   Database,
   Eraser,
   Globe2,
@@ -14,6 +15,7 @@ import {
   Volume2,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { HistoryPanel } from "@/components/history/HistoryPanel";
 import { REGIONS } from "@/constants/regions";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -92,14 +94,14 @@ export function SettingsTab({
         </SettingCard>
 
         <SettingCard icon={Brush} title={t("settings.theme")} description={t("settings.themeDescription")}>
-          <select
-            className="field settings-select"
+          <CustomSelect
             value={settings.theme}
-            onChange={(event) => onSettingsChange({ ...settings, theme: event.target.value as AppSettings["theme"] })}
-          >
-            <option value="esports">{t("settings.themeEsports")}</option>
-            <option value="rift">{t("settings.themeRift")}</option>
-          </select>
+            items={[
+              { label: t("settings.themeEsports"), value: "esports" },
+              { label: t("settings.themeRift"), value: "rift" },
+            ]}
+            onChange={(value) => onSettingsChange({ ...settings, theme: value as AppSettings["theme"] })}
+          />
         </SettingCard>
 
         <SettingCard icon={Users} title={t("settings.defaultTeam")} description={t("settings.defaultTeamDescription")}>
@@ -127,17 +129,11 @@ export function SettingsTab({
         </SettingCard>
 
         <SettingCard icon={Globe2} title={t("settings.defaultRegion")} description={t("settings.defaultRegionDescription")}>
-          <select
-            className="field settings-select"
+          <CustomSelect
             value={settings.defaultRegion}
-            onChange={(event) => onSettingsChange({ ...settings, defaultRegion: event.target.value as PlatformRegion })}
-          >
-            {REGIONS.map((region) => (
-              <option key={region} value={region}>
-                {region}
-              </option>
-            ))}
-          </select>
+            items={REGIONS.map((region) => ({ label: region, value: region }))}
+            onChange={(value) => onSettingsChange({ ...settings, defaultRegion: value as PlatformRegion })}
+          />
         </SettingCard>
       </SettingsSection>
 
@@ -230,6 +226,83 @@ function SegmentedControl({
           {item.label}
         </button>
       ))}
+    </div>
+  );
+}
+
+function CustomSelect<T extends string>({
+  items,
+  onChange,
+  value,
+}: {
+  items: Array<{ label: string; value: T }>;
+  onChange: (value: T) => void;
+  value: T;
+}) {
+  const [open, setOpen] = useState(false);
+  const selectRef = useRef<HTMLDivElement>(null);
+  const selectedItem = items.find((item) => item.value === value) ?? items[0];
+  const locked = items.length <= 1;
+
+  useEffect(() => {
+    if (!open) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (selectRef.current && !selectRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open]);
+
+  return (
+    <div className={`custom-select ${open ? "is-open" : ""}`} ref={selectRef}>
+      <button
+        aria-disabled={locked}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+        className={`custom-select-trigger ${locked ? "locked" : ""}`}
+        onClick={() => {
+          if (!locked) setOpen((current) => !current);
+        }}
+        type="button"
+      >
+        <span>{selectedItem?.label ?? value}</span>
+        {!locked && <ChevronDown className="custom-select-chevron h-4 w-4" />}
+      </button>
+
+      {!locked && open && (
+        <div className="custom-select-menu" role="listbox">
+          {items.map((item) => (
+            <button
+              aria-selected={item.value === value}
+              className={`custom-select-option ${item.value === value ? "active" : ""}`}
+              key={item.value}
+              onClick={() => {
+                onChange(item.value);
+                setOpen(false);
+              }}
+              role="option"
+              type="button"
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

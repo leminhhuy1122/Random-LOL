@@ -1,3 +1,5 @@
+import type { ChampionTag } from "./champion";
+
 export type PlatformRegion =
   | "VN2"
   | "KR"
@@ -38,6 +40,7 @@ export type PlayerMatchItem = {
   id: string;
   championKey: string;
   championName: string;
+  championTags: ChampionTag[];
   championIconUrl: string;
   level: number;
   win: boolean;

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { CheckCircle2, Gem, Sparkles, WandSparkles } from "lucide-react";
 import { useRef } from "react";
 import { AssetIcon } from "@/components/ui/AssetIcon";
+import { LaneIcon } from "@/components/ui/LaneIcon";
 import { LANE_BY_ID } from "@/constants/lanes";
 import { useI18n } from "@/i18n/I18nProvider";
 import { getLaneLabel } from "@/i18n/laneLabels";
@@ -70,7 +71,7 @@ export function ResultChampionCard({ pick, density = "slot", index = 0 }: Result
 
       <div className="result-card-top">
         <span className={`lane-token bg-gradient-to-r ${lane.color}`}>
-          <span>{lane.icon}</span>
+          <LaneIcon lane={pick.lane} className="lane-token-icon" />
           {lane.shortLabel}
         </span>
         <span className="lock-token">

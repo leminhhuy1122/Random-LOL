@@ -60,7 +60,6 @@ export function PlayerLookup({ defaultRegion }: PlayerLookupProps) {
         <div>
           <p className="screen-kicker">{t("player.kicker")}</p>
           <h2>{t("player.title")}</h2>
-          <p className="panel-copy">{t("player.copy")}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="lookup-form">
